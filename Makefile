@@ -7,23 +7,23 @@ BUILD := $(CURDIR)/build
 # Git repos
 LIBUSB_REPO := https://github.com/libusb/libusb.git
 FREENECT_REPO := https://github.com/OpenKinect/libfreenect.git
-PIGPIO_REPO := https://github.com/joan2937/pigpio.git
 
 # ================================
 # Top-level targets (compile all .c files)
 # ================================
 PROGRAM := mab
-SRC := main.c
+SRC := $(wildcard src/*.c)
+HEADERS_DIR := inc
 
-CFLAGS := -Wall -Wextra -O2
-LDFLAGS := -lfreenect -lusb-1.0 -ludev -lpigpio -lpthread -lm
+CFLAGS := -Wall -Wextra -O2 -I$(HEADERS_DIR)
+LDFLAGS := -lfreenect -lusb-1.0 -ludev -lpthread
 
 program: $(SRC)
 	$(CC) $(CFLAGS) $(SRC) -o $(PROGRAM) $(LDFLAGS)
 # ================================
 # Dependencies
 # ================================
-deps: sys_deps libusb freenect pigpio lib_headers distclean
+deps: sys_deps libusb freenect lib_headers distclean
 
 cleanlib:
 	rm -rf lib
@@ -32,16 +32,14 @@ clean:
 	rm -rf $(BUILD)
 
 distclean: clean
-	rm -rf libusb libfreenect pigpio
+	rm -rf libusb libfreenect
 
 # ================================
 # Collect headers into one folder
 # ================================
-lib_headers: libfreenect/.git pigpio/.git
+lib_headers: libfreenect/.git
 	mkdir -p lib
 
-    # Pigpio headers
-	cp -r pigpio/*.h lib/
     # libfreenect core headers
 	cp -r libfreenect/src/*.h lib/
 	cp -r libfreenect/include/*.h lib/
@@ -88,17 +86,3 @@ freenect: libfreenect/.git libusb
 
 libfreenect/.git:
 	git clone $(FREENECT_REPO) libfreenect
-
-# ================================
-# pigpio (shared)
-# ================================
-pigpio: pigpio/.git
-	mkdir -p $(BUILD)/pigpio
-	cd $(BUILD)/pigpio && cmake ../../pigpio \
-	    -DCMAKE_INSTALL_PREFIX=$(PREFIX) \
-	    -DBUILD_SHARED_LIBS=ON
-	$(MAKE) -C $(BUILD)/pigpio
-	sudo $(MAKE) -C $(BUILD)/pigpio install
-
-pigpio/.git:
-	git clone $(PIGPIO_REPO) pigpio
