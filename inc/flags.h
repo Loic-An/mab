@@ -23,11 +23,10 @@
  * Binary distributions must follow the binary distribution requirements of
  * either License.
  */
- 
+
 #pragma once
 
 #include "libfreenect.h"
-
 
 int send_cmd(freenect_device *dev, uint16_t cmd, void *cmdbuf, unsigned int cmd_len, void *replybuf, int reply_len);
 

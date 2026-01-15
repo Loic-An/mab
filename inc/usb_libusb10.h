@@ -31,39 +31,42 @@
 
 // There are a few rules: PKTS_PER_XFER * NUM_XFERS <= 1000, PKTS_PER_XFER % 8 == 0.
 #if defined(__APPLE__)
-  #define DEPTH_PKTBUF 2048
-  #define VIDEO_PKTBUF 2048
+#define DEPTH_PKTBUF 2048
+#define VIDEO_PKTBUF 2048
 
-  #define PKTS_PER_XFER 128
-  #define NUM_XFERS 4
+#define PKTS_PER_XFER 128
+#define NUM_XFERS 4
 #else
-  #define DEPTH_PKTBUF 1920
-  #define VIDEO_PKTBUF 1920
+#define DEPTH_PKTBUF 1920
+#define VIDEO_PKTBUF 1920
 
-  #if defined(_WIN32)
-    #define PKTS_PER_XFER 32
-    #define NUM_XFERS 8
-  #else
-    #define PKTS_PER_XFER 16
-    #define NUM_XFERS 16
-  #endif
+#if defined(_WIN32)
+#define PKTS_PER_XFER 32
+#define NUM_XFERS 8
+#else
+#define PKTS_PER_XFER 16
+#define NUM_XFERS 16
+#endif
 #endif
 
-typedef struct {
+typedef struct
+{
 	libusb_context *ctx;
 	int should_free_ctx;
 } fnusb_ctx;
 
-typedef struct {
-	freenect_device *parent; //so we can go up from the libusb userdata
+typedef struct
+{
+	freenect_device *parent; // so we can go up from the libusb userdata
 	libusb_device_handle *dev;
 	int device_dead; // set to 1 when the underlying libusb_device_handle vanishes (ie, Kinect was unplugged)
 	int VID;
 	int PID;
 } fnusb_dev;
 
-typedef struct {
-	fnusb_dev *parent; //so we can go up from the libusb userdata
+typedef struct
+{
+	fnusb_dev *parent; // so we can go up from the libusb userdata
 	struct libusb_transfer **xfers;
 	uint8_t *buffer;
 	fnusb_iso_cb cb;
@@ -75,12 +78,12 @@ typedef struct {
 } fnusb_isoc_stream;
 
 int fnusb_num_devices(freenect_context *ctx);
-int fnusb_list_device_attributes(freenect_context *ctx, struct freenect_device_attributes** attribute_list);
+int fnusb_list_device_attributes(freenect_context *ctx, struct freenect_device_attributes **attribute_list);
 
 int fnusb_init(fnusb_ctx *ctx, freenect_usb_context *usb_ctx);
 int fnusb_shutdown(fnusb_ctx *ctx);
 int fnusb_process_events(fnusb_ctx *ctx);
-int fnusb_process_events_timeout(fnusb_ctx *ctx, struct timeval* timeout);
+int fnusb_process_events_timeout(fnusb_ctx *ctx, struct timeval *timeout);
 
 int fnusb_open_subdevices(freenect_device *dev, int index);
 int fnusb_close_subdevices(freenect_device *dev);

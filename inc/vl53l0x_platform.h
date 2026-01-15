@@ -4,17 +4,19 @@
 #include <stdint.h>
 #include "vl53l0x_types.h"
 
+// I2C device file path on the Raspberry Pi running Raspbian
 #define I2C_DEVICE "/dev/i2c-1"
 
 /* Forward declaration - actual definition is in vl53l0x_def.h */
 struct VL53L0X_DevData_t;
 
-typedef struct {
+typedef struct
+{
     uint8_t I2cDevAddr;
     struct VL53L0X_DevData_t *Data;
 } VL53L0X_Dev_t;
 
-typedef VL53L0X_Dev_t* VL53L0X_DEV;
+typedef VL53L0X_Dev_t *VL53L0X_DEV;
 
 /* PAL Device Data Access macros */
 #define PALDevDataGet(Dev, field) (Dev->Data->field)

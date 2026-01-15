@@ -29,8 +29,8 @@
 #include <stdint.h>
 #include "usb_libusb10.h"
 
-
-typedef struct {
+typedef struct
+{
 	uint32_t magic;
 	uint32_t tag;
 	uint32_t bytes;
@@ -39,18 +39,20 @@ typedef struct {
 	uint32_t unk;
 } bootloader_command;
 
-typedef struct {
-	uint32_t magic;       // Magic bytes.  2BL uses 0xF00BACCA, audios uses 0xCA77F00D
-	uint16_t ver_minor;   // The version string has four parts, each a 16-bit little-endian int.
-	uint16_t ver_major;   // Yes, minor comes before major.
+typedef struct
+{
+	uint32_t magic;		  // Magic bytes.  2BL uses 0xF00BACCA, audios uses 0xCA77F00D
+	uint16_t ver_minor;	  // The version string has four parts, each a 16-bit little-endian int.
+	uint16_t ver_major;	  // Yes, minor comes before major.
 	uint16_t ver_release; //
-	uint16_t ver_patch;   //
-	uint32_t base_addr;   // Base address of firmware image.  2BL starts at 0x10000, audios starts at 0x80000.
-	uint32_t size;        // Size of firmware image, in bytes
+	uint16_t ver_patch;	  //
+	uint32_t base_addr;	  // Base address of firmware image.  2BL starts at 0x10000, audios starts at 0x80000.
+	uint32_t size;		  // Size of firmware image, in bytes
 	uint32_t entry_addr;  // Code entry point (absolute address)
 } firmware_header;
 
-typedef struct {
+typedef struct
+{
 	uint32_t magic;
 	uint32_t tag;
 	uint32_t arg1; // initial command: 0.  Firmware blocks: byte count.
@@ -59,13 +61,14 @@ typedef struct {
 	uint32_t zeros[8];
 } cemdloader_command;
 
-typedef struct {
+typedef struct
+{
 	uint32_t magic;
 	uint32_t tag;
 	uint32_t status;
 } bootloader_status_code;
 
-int upload_firmware(fnusb_dev* dev, char * fw_filename);
-int upload_firmware_from_memory(fnusb_dev* dev, unsigned char * fw_from_mem, unsigned int fw_size_in_bytes);
+int upload_firmware(fnusb_dev *dev, char *fw_filename);
+int upload_firmware_from_memory(fnusb_dev *dev, unsigned char *fw_from_mem, unsigned int fw_size_in_bytes);
 
-int upload_cemd_data(fnusb_dev* dev);
+int upload_cemd_data(fnusb_dev *dev);
