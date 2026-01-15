@@ -4,3 +4,4 @@ libusb/
 pigpio/
 libfreenect/
 mab
+.vscode/

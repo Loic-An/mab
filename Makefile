@@ -2,7 +2,7 @@
 # Configuration
 # ================================
 PREFIX := /usr/local
-BUILD := $(CURDIR)/build
+BUILD := ./build
 
 # Git repos
 LIBUSB_REPO := https://github.com/libusb/libusb.git
@@ -32,7 +32,7 @@ clean:
 	rm -rf $(BUILD)
 
 distclean: clean
-	rm -rf libusb libfreenect
+	sudo rm -rf libusb libfreenect
 
 # ================================
 # Collect headers into one folder
