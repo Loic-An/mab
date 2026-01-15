@@ -26,7 +26,7 @@ run:
 
 on_pi:
 	git restore .
-	git pull origin main
+	git pull
 	make program
 	echo "Running program..."
 	make run
