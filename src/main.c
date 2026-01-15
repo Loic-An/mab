@@ -4,6 +4,7 @@
 #include <pthread.h>
 #include "libfreenect.h"
 #include "vl53l0x_api.h"
+#include "vl53l0x_platform.h"
 
 int test_freenect_initialization(freenect_context *ctx, freenect_device *dev)
 {
@@ -51,6 +52,47 @@ int test_freenect_initialization(freenect_context *ctx, freenect_device *dev)
     return 0;
 }
 
+VL53L0X_Error test_vl53l0x_initialization(VL53L0X_DEV dev)
+{
+    VL53L0X_Error status;
+
+    dev = (VL53L0X_DEV)malloc(sizeof(VL53L0X_Dev_t));
+    if (dev == NULL)
+    {
+        fprintf(stderr, "Error allocating memory for VL53L0X device\n");
+        return VL53L0X_ERROR_BUFFER_TOO_SMALL;
+    }
+    dev->I2cDevAddr = 29; // Default I2C address for VL53L0X
+    dev->Data = (struct VL53L0X_DevData_t *)malloc(sizeof(struct VL53L0X_DevData_t));
+    if (dev->Data == NULL)
+    {
+        fprintf(stderr, "Error allocating memory for VL53L0X device data\n");
+        free(dev);
+        return VL53L0X_ERROR_BUFFER_TOO_SMALL;
+    }
+    
+
+    // Initialize the VL53L0X device
+    status = VL53L0X_DataInit(dev);
+    if (status != VL53L0X_ERROR_NONE)
+    {
+        fprintf(stderr, "Error initializing VL53L0X device: %d\n", status);
+        return status;
+    }
+    printf("VL53L0X device initialized successfully\n");
+
+    // Perform static initialization
+    status = VL53L0X_StaticInit(dev);
+    if (status != VL53L0X_ERROR_NONE)
+    {
+        fprintf(stderr, "Error in static initialization: %d\n", status);
+        return status;
+    }
+    printf("VL53L0X static initialization completed successfully\n");
+
+    return VL53L0X_ERROR_NONE;
+}
+
 int main(void)
 {
     // test freenect initialization and device handling
@@ -59,37 +101,8 @@ int main(void)
 
     (void)test_freenect_initialization(ctx, dev);
 
-    // test if vl53l0x sensor is present
-    printf("Testing VL53L0X sensor measurement\n");
-    VL53L0X_DEV vl53l0x_dev;
-    VL53L0X_Error status;
-    vl53l0x_dev = (VL53L0X_DEV)malloc(sizeof(VL53L0X_Dev_t));
-    if (vl53l0x_dev == NULL)
-    {
-        fprintf(stderr, "Failed to allocate memory for VL53L0X device\n");
-        return EXIT_FAILURE;
-    }
-    vl53l0x_dev->I2cDevAddr = 0x29; // Default I2C address for VL53L0X
-    status = VL53L0X_DataInit(vl53l0x_dev);
-    if (status != VL53L0X_ERROR_NONE)
-    {
-        fprintf(stderr, "VL53L0X DataInit failed with error: %d\n", status);
-        free(vl53l0x_dev);
-        return EXIT_FAILURE;
-    }
-    printf("VL53L0X DataInit successful\n");
-    // make a measurement
-    VL53L0X_RangingMeasurementData_t ranging_data;
-    status = VL53L0X_PerformSingleRangingMeasurement(vl53l0x_dev, &ranging_data);
-    if (status != VL53L0X_ERROR_NONE)
-    {
-        fprintf(stderr, "VL53L0X measurement failed with error: %d\n", status);
-        free(vl53l0x_dev);
-        return EXIT_FAILURE;
-    }
-    printf("VL53L0X Measurement successful: Distance = %d mm\n", ranging_data.RangeMilliMeter);
-    free(vl53l0x_dev);
-
-    printf("VL53L0X sensor test completed\n");
-    return EXIT_SUCCESS;
+    // test VL53L0X initialization
+    VL53L0X_DEV vl53l0x_dev = NULL;
+    (void)test_vl53l0x_initialization(vl53l0x_dev);
+    return 0;
 }

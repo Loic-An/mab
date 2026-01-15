@@ -5,6 +5,8 @@
 #include <fcntl.h>
 #include <string.h>
 
+#define USE_I2C_2V8
+
 static int i2c_fd = -1;
 
 static int i2c_set_addr(uint8_t addr)

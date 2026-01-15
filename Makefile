@@ -20,6 +20,17 @@ LDFLAGS := -lfreenect -lusb-1.0 -ludev -lpthread
 
 program: $(SRC)
 	$(CC) $(CFLAGS) $(SRC) -o $(PROGRAM) $(LDFLAGS)
+
+run:
+	./$(PROGRAM)
+
+on_pi:
+	git restore .
+	git pull origin main
+	make program
+	echo "Running program..."
+	make run
+
 # ================================
 # Dependencies
 # ================================
