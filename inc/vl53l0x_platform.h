@@ -6,6 +6,7 @@
 
 // I2C device file path on the Raspberry Pi running Raspbian
 #define I2C_DEVICE "/dev/i2c-1"
+#define USE_I2C_2V8
 
 /* Forward declaration - actual definition is in vl53l0x_def.h */
 struct VL53L0X_DevData_t;
