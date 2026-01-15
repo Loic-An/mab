@@ -28,6 +28,8 @@ on_pi:
 	git restore .
 	git pull
 	make program
+	clear
+	git log -1 --pretty=format:"commit %h:%s"
 	echo "Running program..."
 	make run
 
