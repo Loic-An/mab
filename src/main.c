@@ -7,10 +7,10 @@
 #include "vl53l0x_platform.h"
 
 // Callback appelé à chaque nouvelle image de profondeur
-void depth_cb(freenect_device *dev, uint16_t *v_depth, uint32_t timestamp)
+void depth_cb(freenect_device *dev, void *v_depth, uint32_t timestamp)
 {
     // Exemple : lire la distance du pixel central (320x240)
-    printf("Profondeur au centre : %d mm\n", v_depth[320 + 240 * 640]);
+    printf("Profondeur au centre : %d mm\n", ((uint16_t *)v_depth)[320 + 240 * 640]);
 }
 
 int test_freenect_initialization(freenect_context *ctx, freenect_device *dev)
