@@ -655,6 +655,7 @@ extern "C"
 #define trace_print_module_function(module, level, function, ...) ((void)0)
 #else
 /* If logging is enabled, these would need proper implementations */
+#include <stdio.h>
 #define _LOG_FUNCTION_START(module, fmt, ...) \
 	printf("[%d] START: " fmt "\n", module, ##__VA_ARGS__)
 #define _LOG_FUNCTION_END(module, status, ...) \
