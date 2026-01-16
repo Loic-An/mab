@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <string.h>
+#include <stdio.h>
 
 #define USE_I2C_2V8
 
@@ -32,9 +33,16 @@ int VL53L0X_WriteMulti(VL53L0X_DEV dev, uint8_t reg, uint8_t *data, uint32_t cou
 int VL53L0X_ReadMulti(VL53L0X_DEV dev, uint8_t reg, uint8_t *data, uint32_t count)
 {
     i2c_set_addr(dev->I2cDevAddr);
-    if (write(i2c_fd, &reg, 1) != 1)
+    ssize_t ret = write(i2c_fd, &reg, 1);
+    printf("ret =%zd\n", ret);
+    if (ret != 1)
+    {
+        printf("VL53L0X_ReadMulti: Failed to write register address\n");
         return -1;
-    return read(i2c_fd, data, count) == (int)count ? 0 : -1;
+    }
+    ret = read(i2c_fd, data, count);
+    printf("ret =%zd\n", ret);
+    return ret == (int)count ? 0 : -1;
 }
 
 int VL53L0X_WrByte(VL53L0X_DEV dev, uint8_t reg, uint8_t value)
