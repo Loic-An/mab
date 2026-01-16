@@ -1,10 +1,12 @@
 #include "vl53l0x_platform.h"
 #include <linux/i2c-dev.h>
+#include <linux/i2c.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <string.h>
 #include <stdio.h>
+#include <errno.h>
 
 #define USE_I2C_2V8
 
@@ -23,26 +25,62 @@ static int i2c_set_addr(uint8_t addr)
 
 int VL53L0X_WriteMulti(VL53L0X_DEV dev, uint8_t reg, uint8_t *data, uint32_t count)
 {
-    i2c_set_addr(dev->I2cDevAddr);
+    int ret = i2c_set_addr(dev->I2cDevAddr);
+    if (ret < 0)
+        return -1;
+
+    /* Use I2C_RDWR to perform a single write message (reg + payload) */
     uint8_t buf[count + 1];
+    struct i2c_msg msg;
+    struct i2c_rdwr_ioctl_data ioctl_data;
+
     buf[0] = reg;
     memcpy(&buf[1], data, count);
-    return write(i2c_fd, buf, count + 1) == (int)(count + 1) ? 0 : -1;
+
+    msg.addr = dev->I2cDevAddr;
+    msg.flags = 0;
+    msg.len = count + 1;
+    msg.buf = buf;
+
+    ioctl_data.msgs = &msg;
+    ioctl_data.nmsgs = 1;
+
+    if (ioctl(i2c_fd, I2C_RDWR, &ioctl_data) < 0)
+    {
+        return -1;
+    }
+    return 0;
 }
 
 int VL53L0X_ReadMulti(VL53L0X_DEV dev, uint8_t reg, uint8_t *data, uint32_t count)
 {
-    printf("i2C=%d\n,fd=%d\n", i2c_set_addr(dev->I2cDevAddr), i2c_fd);
-    ssize_t ret = write(i2c_fd, &reg, 1);
-    printf("ret =%zd\n", ret);
-    if (ret != 1)
+    int ret = i2c_set_addr(dev->I2cDevAddr);
+    if (ret < 0)
+        return -1;
+
+    /* Two-message transaction: write register address, then read data */
+    uint8_t reg_buf = reg;
+    struct i2c_msg msgs[2];
+    struct i2c_rdwr_ioctl_data ioctl_data;
+
+    msgs[0].addr = dev->I2cDevAddr;
+    msgs[0].flags = 0;
+    msgs[0].len = 1;
+    msgs[0].buf = &reg_buf;
+
+    msgs[1].addr = dev->I2cDevAddr;
+    msgs[1].flags = I2C_M_RD;
+    msgs[1].len = count;
+    msgs[1].buf = data;
+
+    ioctl_data.msgs = msgs;
+    ioctl_data.nmsgs = 2;
+
+    if (ioctl(i2c_fd, I2C_RDWR, &ioctl_data) < 0)
     {
-        printf("VL53L0X_ReadMulti: Failed to write register address\n");
         return -1;
     }
-    ret = read(i2c_fd, data, count);
-    printf("ret =%zd\n", ret);
-    return ret == (int)count ? 0 : -1;
+    return 0;
 }
 
 int VL53L0X_WrByte(VL53L0X_DEV dev, uint8_t reg, uint8_t value)
