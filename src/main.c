@@ -140,5 +140,5 @@ int main(int argc, char **argv)
         return test_freenect_async(ctx, dev);
     }
     printf("Running freenect sync test\n");
-    return test_freenect();
+    return test_freenect_sync();
 }
