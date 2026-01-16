@@ -93,6 +93,7 @@ freenect: libfreenect/.git libusb
 	    -DBUILD_FREENECT_CV=ON \
 	    -DBUILD_FREENECT_AUDIO=ON \
 	    -DBUILD_FREENECT_REG=ON \
+		-DBUILD_REDIST_PACKAGE=OFF \
 	    -DWITH_UDEV=ON
 	$(MAKE) -C $(BUILD)/freenect
 	sudo $(MAKE) -C $(BUILD)/freenect install
