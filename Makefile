@@ -36,7 +36,7 @@ on_pi:
 # ================================
 # Dependencies
 # ================================
-deps: sys_deps libusb freenect lib_headers distclean
+deps: sys_deps libusb freenect lib_headers
 
 cleanlib:
 	rm -rf lib
