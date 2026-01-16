@@ -652,18 +652,20 @@ extern "C"
 #define _LOG_FUNCTION_START(module, fmt, ...) ((void)0)
 #define _LOG_FUNCTION_END(module, status, ...) ((void)0)
 #define _LOG_FUNCTION_END_FMT(module, status, fmt, ...) ((void)0)
-#define trace_print_module_function(module, level, function, ...) ((void)0)
+#define trace_print_module_function(module, level, function, fmt, ...) ((void)0)
 #else
-/* If logging is enabled, these would need proper implementations */
+/* If logging is enabled, provide clearer, consistent output and include
+ * file/line/function context. Use variadic macros and swallow extra commas.
+ */
 #include <stdio.h>
 #define _LOG_FUNCTION_START(module, fmt, ...) \
-	printf("[%d] START: " fmt "\n", module, ##__VA_ARGS__)
+    printf("[%d] START: %s:%d:%s(): " fmt "\n", (module), __FILE__, __LINE__, __func__, ##__VA_ARGS__)
 #define _LOG_FUNCTION_END(module, status, ...) \
-	printf("[%d] END: status=%d\n", module, status)
+    printf("[%d] END: %s:%d:%s(): status=%d\n", (module), __FILE__, __LINE__, __func__, (int)(status))
 #define _LOG_FUNCTION_END_FMT(module, status, fmt, ...) \
-	printf("[%d] END: status=%d " fmt "\n", module, status, ##__VA_ARGS__)
-#define trace_print_module_function(module, level, function, ...) \
-	printf("[%d][%d][%d] " fmt "\n", module, level, function, ##__VA_ARGS__)
+    printf("[%d] END: %s:%d:%s(): status=%d " fmt "\n", (module), __FILE__, __LINE__, __func__, (int)(status), ##__VA_ARGS__)
+#define trace_print_module_function(module, level, function, fmt, ...) \
+    printf("[%d][%d] %s:%d:%s(): " fmt "\n", (module), (level), __FILE__, __LINE__, (function), ##__VA_ARGS__)
 #endif
 
 /** @} VL53L0X_define_Logging_group */
