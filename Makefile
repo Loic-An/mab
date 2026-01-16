@@ -16,7 +16,7 @@ SRC := $(wildcard src/*.c)
 HEADERS_DIR := inc
 
 CFLAGS := -Wall -Wextra -O2 -I$(HEADERS_DIR)
-LDFLAGS := -lfreenect -lusb-1.0 -ludev -lpthread
+LDFLAGS := -lfreenect -lfreenect_sync -lusb-1.0 -ludev -lpthread
 
 program: $(SRC)
 	$(CC) $(CFLAGS) $(SRC) -o $(PROGRAM) $(LDFLAGS)
