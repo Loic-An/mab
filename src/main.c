@@ -6,50 +6,42 @@
 #include "vl53l0x_api.h"
 #include "vl53l0x_platform.h"
 
+// Callback appelé à chaque nouvelle image de profondeur
+void depth_cb(freenect_device *dev, uint16_t *v_depth, uint32_t timestamp)
+{
+    // Exemple : lire la distance du pixel central (320x240)
+    printf("Profondeur au centre : %d mm\n", v_depth[320 + 240 * 640]);
+}
+
 int test_freenect_initialization(freenect_context *ctx, freenect_device *dev)
 {
-    int ret;
 
-    printf("Testing freenect initialization...\n");
-    // Initialize freenect context
-    ret = freenect_init(&ctx, NULL);
-    if (ret < 0)
+    // 1. Initialisation
+    if (freenect_init(&ctx, NULL) < 0)
+        return 1;
+
+    // 2. Ouverture du premier périphérique trouvé
+    if (freenect_open_device(ctx, &dev, 0) < 0)
+        return 1;
+
+    // 3. Configuration de la profondeur
+    freenect_set_depth_callback(dev, depth_cb);
+    freenect_set_depth_mode(dev, freenect_find_depth_mode(FREENECT_RESOLUTION_MEDIUM, FREENECT_DEPTH_11BIT));
+
+    // 4. Démarrage du flux
+    freenect_start_depth(dev);
+
+    printf("Lecture des données... Appuyez sur Ctrl+C pour arrêter.\n");
+
+    // 5. Boucle principale pour traiter les événements USB
+    while (freenect_process_events(ctx) >= 0)
     {
-        fprintf(stderr, "Error initializing freenect context: %d\n", ret);
-        return ret;
+        // Le programme tourne ici et appelle depth_cb automatiquement
     }
 
-    // Set log level for debugging
-    freenect_set_log_level(ctx, FREENECT_LOG_INFO);
-
-    // Get number of connected devices
-    int num_devices = freenect_num_devices(ctx);
-    printf("Number of devices found: %d\n", num_devices);
-
-    if (num_devices > 0)
-    {
-        // Open the first device
-        ret = freenect_open_device(ctx, &dev, 0);
-        if (ret < 0)
-        {
-            fprintf(stderr, "Error opening device: %d\n", ret);
-            freenect_shutdown(ctx);
-            return ret;
-        }
-        printf("Device opened successfully\n");
-
-        // Close the device
-        freenect_close_device(dev);
-    }
-
-    printf("Freenect shutdown...\n");
-    // Shutdown freenect context
-    ret = freenect_shutdown(ctx);
-    if (ret < 0)
-    {
-        fprintf(stderr, "Error shutting down freenect: %d\n", ret);
-        return ret;
-    }
+    freenect_stop_depth(dev);
+    freenect_close_device(dev);
+    freenect_shutdown(ctx);
 
     return 0;
 }
