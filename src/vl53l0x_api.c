@@ -1497,14 +1497,14 @@ VL53L0X_Error VL53L0X_GetInterMeasurementPeriodMilliSeconds(VL53L0X_DEV Dev,
 
 	Status = VL53L0X_RdWord(Dev, VL53L0X_REG_OSC_CALIBRATE_VAL,
 							&osc_calibrate_val);
-
+	printf("status=%d osc_calibrate_val=%u\n", Status, osc_calibrate_val);
 	if (Status == VL53L0X_ERROR_NONE)
 	{
 		Status = VL53L0X_RdDWord(Dev,
 								 VL53L0X_REG_SYSTEM_INTERMEASUREMENT_PERIOD,
 								 &IMPeriodMilliSeconds);
 	}
-
+	printf("status=%d IMPeriodMilliSeconds=%u osc_calibrate_val=%u\n", Status, IMPeriodMilliSeconds, osc_calibrate_val);
 	if (Status == VL53L0X_ERROR_NONE)
 	{
 		if (osc_calibrate_val != 0)
