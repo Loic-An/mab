@@ -10,6 +10,7 @@ int test_freenect_initialization(freenect_context *ctx, freenect_device *dev)
 {
     int ret;
 
+    printf("Testing freenect initialization...\n");
     // Initialize freenect context
     ret = freenect_init(&ctx, NULL);
     if (ret < 0)
@@ -41,6 +42,7 @@ int test_freenect_initialization(freenect_context *ctx, freenect_device *dev)
         freenect_close_device(dev);
     }
 
+    printf("Freenect shutdown...\n");
     // Shutdown freenect context
     ret = freenect_shutdown(ctx);
     if (ret < 0)
@@ -99,9 +101,10 @@ int main(void)
     freenect_device *dev = NULL;
 
     (void)test_freenect_initialization(ctx, dev);
-
-    // test VL53L0X initialization
-    VL53L0X_DEV vl53l0x_dev = NULL;
-    (void)test_vl53l0x_initialization(vl53l0x_dev);
-    return 0;
+    /*
+        // test VL53L0X initialization
+        VL53L0X_DEV vl53l0x_dev = NULL;
+        (void)test_vl53l0x_initialization(vl53l0x_dev);
+        return 0;
+        */
 }

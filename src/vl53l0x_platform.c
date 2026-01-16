@@ -45,11 +45,7 @@ int VL53L0X_WriteMulti(VL53L0X_DEV dev, uint8_t reg, uint8_t *data, uint32_t cou
     ioctl_data.msgs = &msg;
     ioctl_data.nmsgs = 1;
 
-    if (ioctl(i2c_fd, I2C_RDWR, &ioctl_data) < 0)
-    {
-        return -1;
-    }
-    return 0;
+    return ioctl(i2c_fd, I2C_RDWR, &ioctl_data);
 }
 
 int VL53L0X_ReadMulti(VL53L0X_DEV dev, uint8_t reg, uint8_t *data, uint32_t count)
