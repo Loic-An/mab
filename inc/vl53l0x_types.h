@@ -4,5 +4,5 @@
 #include <stddef.h>
 typedef int8_t VL53L0X_Error;
 typedef uint8_t VL53L0X_DeviceState;
-typedef uint32_t FixPoint1616_t;
+typedef int32_t FixPoint1616_t;
 #endif

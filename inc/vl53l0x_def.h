@@ -659,13 +659,13 @@ extern "C"
  */
 #include <stdio.h>
 #define _LOG_FUNCTION_START(module, fmt, ...) \
-    printf("[%d] START: %s:%d:%s(): " fmt "\n", (module), __FILE__, __LINE__, __func__, ##__VA_ARGS__)
+	printf("[%d] START:\t%s:%d\t%s(): " fmt "\n", (module), __FILE__, __LINE__, __func__, ##__VA_ARGS__)
 #define _LOG_FUNCTION_END(module, status, ...) \
-    printf("[%d] END: %s:%d:%s(): status=%d\n", (module), __FILE__, __LINE__, __func__, (int)(status))
+	printf("[%d] END:\t%s:%d\t%s(): status=%d\n", (module), __FILE__, __LINE__, __func__, (int)(status))
 #define _LOG_FUNCTION_END_FMT(module, status, fmt, ...) \
-    printf("[%d] END: %s:%d:%s(): status=%d " fmt "\n", (module), __FILE__, __LINE__, __func__, (int)(status), ##__VA_ARGS__)
+	printf("[%d] END:\t%s:%d\t%s(): status=%d " fmt "\n", (module), __FILE__, __LINE__, __func__, (int)(status), ##__VA_ARGS__)
 #define trace_print_module_function(module, level, function, fmt, ...) \
-    printf("[%d][%d] %s:%d:%s(): " fmt "\n", (module), (level), __FILE__, __LINE__, (function), ##__VA_ARGS__)
+	printf("[%d][%d] \t%s:%d\t%s(): " fmt "\n", (module), (level), __FILE__, __LINE__, (function), ##__VA_ARGS__)
 #endif
 
 /** @} VL53L0X_define_Logging_group */

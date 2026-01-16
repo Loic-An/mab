@@ -62,7 +62,7 @@ VL53L0X_Error test_vl53l0x_initialization(VL53L0X_DEV dev)
         fprintf(stderr, "Error allocating memory for VL53L0X device\n");
         return VL53L0X_ERROR_BUFFER_TOO_SMALL;
     }
-    dev->I2cDevAddr = 29; // Default I2C address for VL53L0X
+    dev->I2cDevAddr = 0x29; // Default I2C address for VL53L0X
     dev->Data = (struct VL53L0X_DevData_t *)malloc(sizeof(struct VL53L0X_DevData_t));
     if (dev->Data == NULL)
     {
@@ -70,7 +70,6 @@ VL53L0X_Error test_vl53l0x_initialization(VL53L0X_DEV dev)
         free(dev);
         return VL53L0X_ERROR_BUFFER_TOO_SMALL;
     }
-    
 
     // Initialize the VL53L0X device
     status = VL53L0X_DataInit(dev);
