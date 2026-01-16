@@ -32,7 +32,7 @@ int VL53L0X_WriteMulti(VL53L0X_DEV dev, uint8_t reg, uint8_t *data, uint32_t cou
 
 int VL53L0X_ReadMulti(VL53L0X_DEV dev, uint8_t reg, uint8_t *data, uint32_t count)
 {
-    printf("i2C=%d\n", i2c_set_addr(dev->I2cDevAddr));
+    printf("i2C=%d\n,fd=%d\n", i2c_set_addr(dev->I2cDevAddr), i2c_fd);
     ssize_t ret = write(i2c_fd, &reg, 1);
     printf("ret =%zd\n", ret);
     if (ret != 1)
