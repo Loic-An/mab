@@ -48,15 +48,13 @@ static int main_motors() {
 
                 // Calcul de la moyenne de la zone
                 int avg_dist = (count > 0) ? (int)(sum / count) : 2047;
-
-                // Affichage formaté pour le débug
                 // On affiche la valeur brute moyenne
                 printf("Moteur [%d,%d] : %4d | ", r, c, avg_dist);
             }
             printf("\n\n");
         }
         
-        printf("------------------------------------------\n");
+        printf("-------------------------------------------\n");
         usleep(50000); // 20 FPS
     }
     return 0;
