@@ -1,36 +1,54 @@
 #include <stdio.h>
 #include <libfreenect/libfreenect_sync.h>
 #include <unistd.h>
-#define stepX 2
-#define stepY 10
+
+#define stepX 12
+#define stepY 12
 
 static int main_matrix() {
     uint16_t *depth_buffer = NULL;
     uint32_t timestamp;
 
-    printf("\e[1;1H\e[2J"); // Efface l'écran du terminal
+    printf("\e[1;1H\e[2J"); 
 
     while (1) {
+        // On récupère la profondeur
         int ret = freenect_sync_get_depth((void**)&depth_buffer, &timestamp, 0, FREENECT_DEPTH_11BIT);
-        if (ret != 0) break;
+        if (ret != 0) {
+            printf("Erreur de lecture...\n");
+            usleep(500000);
+            continue;
+        }
 
-        printf("\e[H"); // Ramène le curseur en haut à gauche sans effacer (évite le scintillement)
+        printf("\e[H"); 
         
-        // On parcourt l'image avec un pas de step 
-        // et un pas de step en hauteur 
-        for (int y = 0; y < 480; y += stepY){
-            for (int x = 0; x < 640; x += stepX){
+        for (int y = 0; y < 480; y += stepY) {
+            for (int x = 0; x < 640; x += stepX) {
                 uint16_t d = depth_buffer[y * 640 + x];
                 
-                if (d >= 2047) printf("  . "); // Trop loin / Erreur
-                else if (d < 800) printf(" ###"); // Très proche
-                else if (d < 1500) printf(" ooo"); // Milieu
-                else printf(" ...");              // Loin
+                // FILTRE ANTI-ARTÉFACT : 
+                // 2047 est le code "sans donnée" ou "trop proche/loin".
+                if (d >= 2047 || d == 0) {
+                    printf("    "); 
+                } 
+                // Ordre corrigé (du plus proche au plus loin)
+                else if (d < 600) {  // TRÈS PROCHE
+                    printf(" ###"); 
+                } 
+                else if (d < 950) {  // PROCHE
+                    printf(" ooo"); 
+                } 
+                else if (d < 1300) { // MILIEU
+                    printf(" ---"); 
+                }
+                else {               // LOIN
+                    printf("  . "); 
+                }
             }
             printf("\n");
         }
-        usleep(100000); // ~20 FPS
+        // Réduire le sleep à 30ms (30 FPS) pour éviter le lag des buffers
+        usleep(33000); 
     }
     return 0;
 }
-
