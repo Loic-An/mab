@@ -116,7 +116,7 @@ int test(int argc, char **argv)
 {
     if (argc > 2)
     {
-        fprintf(stderr, "Usage: %s <freenect_sync|freenect_async|vl53l0x|matrix|rows|all>\n", argv[0]);
+        fprintf(stderr, "Usage: %s <freenect_sync|freenect_async|vl53l0x|matrix|motors|all>\n", argv[0]);
         return EXIT_FAILURE;
     }
     if (argv[1] == std::string("freenect_sync"))
@@ -139,8 +139,8 @@ int test(int argc, char **argv)
     else if (argv[1] == std::string("matrix")){
         return main_matrix();
     }
-    else if (argv[1] == std::string("rows")){
-        return main_rows();
+    else if (argv[1] == std::string("motors")){
+        return main_motors();
     }
     else if (argv[1] == std::string("all"))
     {
@@ -160,7 +160,7 @@ int test(int argc, char **argv)
     }
     else
     {
-        fprintf(stderr, "Usage: %s <freenect_sync|freenect_async|vl53l0x|matrix|rows|all>\n", argv[0]);
+        fprintf(stderr, "Usage: %s <freenect_sync|freenect_async|vl53l0x|matrix|motors|all>\n", argv[0]);
         return EXIT_FAILURE;
     }
 }

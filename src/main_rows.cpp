@@ -2,10 +2,10 @@
 #include <libfreenect/libfreenect_sync.h>
 #include <unistd.h>
 
-#define ROWS 1 
+#define ROWS 2
 #define COLS 2
 
-int main_rows() {
+static int main_motors() {
     uint16_t *depth_buffer = NULL;
     uint32_t timestamp;
 
