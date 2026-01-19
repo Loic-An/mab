@@ -26,12 +26,10 @@ static int main_matrix() {
             for (int x = 0; x < 640; x += stepX) {
                 uint16_t d = depth_buffer[y * 640 + x];
                 
-                // FILTRE ANTI-ARTÉFACT : 
                 // 2047 est le code "sans donnée" ou "trop proche/loin".
                 if (d >= 2047 || d == 0) {
                     printf("    "); 
                 } 
-                // Ordre corrigé (du plus proche au plus loin)
                 else if (d < 600) {  // TRÈS PROCHE
                     printf(" ###"); 
                 } 
@@ -47,7 +45,7 @@ static int main_matrix() {
             }
             printf("\n");
         }
-        // Réduire le sleep à 30ms (30 FPS) pour éviter le lag des buffers
+        // ~30 fps
         usleep(33000); 
     }
     return 0;
