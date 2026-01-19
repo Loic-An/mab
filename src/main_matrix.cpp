@@ -28,7 +28,7 @@ static int main_matrix() {
             }
             printf("\n");
         }
-        usleep(20000); // ~20 FPS
+        usleep(100000); // ~20 FPS
     }
     return 0;
 }
