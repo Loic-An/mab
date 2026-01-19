@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <libfreenect/libfreenect_sync.h>
 #include <unistd.h>
+#define step 11
 
 static int main_matrix() {
     uint16_t *depth_buffer = NULL;
@@ -16,8 +17,8 @@ static int main_matrix() {
         
         // On parcourt l'image avec un pas de 32 (640/32 = 20 colonnes)
         // et un pas de 32 en hauteur (480/32 = 15 lignes)
-        for (int y = 0; y < 480; y += 32) {
-            for (int x = 0; x < 640; x += 32) {
+        for (int y = 0; y < 480; y += step){
+            for (int x = 0; x < 640; x += step){
                 uint16_t d = depth_buffer[y * 640 + x];
                 
                 if (d >= 2047) printf("  . "); // Trop loin / Erreur

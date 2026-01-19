@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <libfreenect/libfreenect_sync.h>
 
-// Configuration de votre matrice physique
 #define ROWS 2  // Nombre de moteurs en hauteur
 #define COLS 2  // Nombre de moteurs en largeur
 
