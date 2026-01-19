@@ -5,6 +5,7 @@
 #include <string>
 #include <libfreenect/libfreenect_sync.h>
 #include "vl53l0x.hpp"
+#include "main_matrix.cpp"
 
 int test_freenect_sync()
 {
@@ -114,7 +115,7 @@ int test(int argc, char **argv)
 {
     if (argc > 2)
     {
-        fprintf(stderr, "Usage: %s <freenect_sync|freenect_async|vl53l0x|all>\n", argv[0]);
+        fprintf(stderr, "Usage: %s <freenect_sync|freenect_async|vl53l0x|matrix|all>\n", argv[0]);
         return EXIT_FAILURE;
     }
     if (argv[1] == std::string("freenect_sync"))
@@ -134,6 +135,9 @@ int test(int argc, char **argv)
         // Exemple de test : initialisation du VL53L0X
         return test_vl53l0x();
     }
+    else if (argv[1] == std::string("matrix")){
+        return main_matrix();
+    }
     else if (argv[1] == std::string("all"))
     {
         int status = 0;
@@ -152,7 +156,7 @@ int test(int argc, char **argv)
     }
     else
     {
-        fprintf(stderr, "Usage: %s <freenect_sync|freenect_async|vl53l0x|all>\n", argv[0]);
+        fprintf(stderr, "Usage: %s <freenect_sync|freenect_async|vl53l0x|matrix|all>\n", argv[0]);
         return EXIT_FAILURE;
     }
 }
