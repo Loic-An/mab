@@ -2,7 +2,7 @@
 #include <libfreenect_sync.h>
 #include <unistd.h>
 
-int main() {
+static int main_matrix() {
     uint16_t *depth_buffer = NULL;
     uint32_t timestamp;
 
