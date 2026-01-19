@@ -162,7 +162,7 @@ bool VL53L0X::wait_for_completion(int timeout_ms)
         }
 
         // Vérifie si la mesure est prête (bit 0 à 0)
-        if (range_status & 0x01)
+        if ((range_status & 0x01))
         {
             // Mesure terminée
             printf("Completed in %d loops (~%dms)\n", loop_count, loop_count);
@@ -190,15 +190,18 @@ bool VL53L0X::wait_for_completion(int timeout_ms)
  * @param distance_mm Pointeur vers la variable recevant la distance en mm
  * @return true si succès, false sinon
  */
-bool VL53L0X::read_distance(uint16_t *distance_mm) {
+bool VL53L0X::read_distance(uint16_t *distance_mm)
+{
     uint8_t buffer[2];
-    if (!read(REG_RESULT_RANGE_VALUE, buffer, 2)) return false;
-    
-    // Reconstruction manuelle (MSB << 8 | LSB)
-    *distance_mm = (uint16_t)(((uint16_t)buffer[0] << 8) | buffer[1]);
+    if (!read(REG_RESULT_RANGE_VALUE, buffer, 2))
+    {
+        fprintf(stderr, "Erreur lecture distance VL53L0X\n");
+        return false;
+    }
+    // Reconstruction Big-Endian vers Little-Endian
+    *distance_mm = (uint16_t)((buffer[0] << 8) | buffer[1]);
     return true;
 }
-
 /**
  * Effectue une mesure complète
  * Enchaîne : start_measurement() -> wait_for_completion() -> read_distance()

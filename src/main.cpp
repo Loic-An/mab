@@ -7,6 +7,7 @@
 #include "vl53l0x.hpp"
 #include "main_matrix.cpp"
 #include "main_rows.cpp"
+#include "VL53L0X.hpp"
 
 int test_freenect_sync()
 {
