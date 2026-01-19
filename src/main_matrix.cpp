@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <libfreenect/libfreenect_sync.h>
 #include <unistd.h>
-#define step 12
+#define step 1
 
 static int main_matrix() {
     uint16_t *depth_buffer = NULL;
@@ -70,7 +70,7 @@ static int main_matrix_color() {
             }
             printf("\x1b[0m\n"); // Reset couleur à chaque ligne
         }
-        usleep(30000); 
+        usleep(150000); 
     }
     return 0;
 }
