@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <libfreenect/libfreenect_sync.h>
 #include <unistd.h>
-#define stepX 1
+#define stepX 2
 #define stepY 10
 
 static int main_matrix() {
