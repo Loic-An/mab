@@ -41,4 +41,11 @@ private:
 
     // Timeout maximal en nombre de loops (1ms par loop)
     static constexpr int MAX_LOOPS = 2000;
+
+    // Helpers d'initialisation (implémentés dans le cpp)
+    bool configure_settings();
+    bool check_temperature();
+    bool calibrate_spad();
+    bool perform_ref_calibration();
+    bool set_timing();
 };
