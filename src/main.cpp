@@ -138,9 +138,6 @@ int test(int argc, char **argv)
     else if (argv[1] == std::string("matrix")){
         return main_matrix();
     }
-    else if (argv[1] == std::string("matrixcolor")){
-        return main_matrix_color();
-    }
     else if (argv[1] == std::string("all"))
     {
         int status = 0;
