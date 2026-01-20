@@ -7,11 +7,9 @@
 
  The range readings are in units of mm. */
 
-#include <Wire.h>
-#include <VL53L0X.h>
+#include "vl53l0x.hpp"
 
 VL53L0X sensor;
-
 
 // Uncomment this line to use long range mode. This
 // increases the sensitivity of the sensor and extends its
@@ -20,27 +18,24 @@ VL53L0X sensor;
 // other than the intended target. It works best in dark
 // conditions.
 
-//#define LONG_RANGE
-
+// #define LONG_RANGE
 
 // Uncomment ONE of these two lines to get
 // - higher speed at the cost of lower accuracy OR
 // - higher accuracy at the cost of lower speed
 
-//#define HIGH_SPEED
-//#define HIGH_ACCURACY
-
+// #define HIGH_SPEED
+// #define HIGH_ACCURACY
 
 void setup()
 {
-  Serial.begin(9600);
-  Wire.begin();
-
   sensor.setTimeout(500);
   if (!sensor.init())
   {
-    Serial.println("Failed to detect and initialize sensor!");
-    while (1) {}
+    printf("Failed to detect and initialize sensor!\n");
+    while (1)
+    {
+    }
   }
 
 #if defined LONG_RANGE
@@ -62,8 +57,11 @@ void setup()
 
 void loop()
 {
-  Serial.print(sensor.readRangeSingleMillimeters());
-  if (sensor.timeoutOccurred()) { Serial.print(" TIMEOUT"); }
+  printf("%d", sensor.readRangeSingleMillimeters());
+  if (sensor.timeoutOccurred())
+  {
+    printf(" TIMEOUT");
+  }
 
-  Serial.println();
+  printf("\n");
 }

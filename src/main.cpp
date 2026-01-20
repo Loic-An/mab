@@ -7,7 +7,6 @@
 #include "vl53l0x.hpp"
 #include "main_matrix.cpp"
 #include "main_rows.cpp"
-#include "VL53L0X.hpp"
 
 int test_freenect_sync()
 {
@@ -103,8 +102,8 @@ int test_vl53l0x()
     }
     printf("VL53L0X initialisé avec succès\n");
     printf("Mesure de distance...\n");
-    uint16_t distance;
-    if (!dev.measure(&distance))
+    uint16_t distance = dev.readRangeSingleMillimeters();
+    if (!errno)
     {
         fprintf(stderr, "Erreur mesure distance VL53L0X\n");
         return EXIT_FAILURE;
@@ -137,10 +136,12 @@ int test(int argc, char **argv)
         // Exemple de test : initialisation du VL53L0X
         return test_vl53l0x();
     }
-    else if (argv[1] == std::string("matrix")){
+    else if (argv[1] == std::string("matrix"))
+    {
         return main_matrix();
     }
-    else if (argv[1] == std::string("motors")){
+    else if (argv[1] == std::string("motors"))
+    {
         return main_motors();
     }
     else if (argv[1] == std::string("all"))

@@ -27,6 +27,8 @@ private:
     static uint8_t dev_ctn;
     // addresse i2c d'une instance
     uint8_t addr;
+    // status of last I2C transmissions
+    uint8_t last_status;
 
 public:
     /* */
@@ -50,6 +52,8 @@ public:
      * @return true si ACK, false si la moindre erreur avec errno modifié
      */
     bool write(uint8_t reg, uint8_t value);
+    bool write(uint8_t reg, uint16_t value);
+    bool write(uint8_t reg, uint32_t value);
 
     /**
      * Write multiple bytes to a register
@@ -64,6 +68,8 @@ public:
      * @return true si ACK (donc value a une valeur correcte), false si la moindre erreur avec errno modifié
      */
     bool read(uint8_t reg, uint8_t *value);
+    bool read(uint8_t reg, uint16_t *value);
+    bool read(uint8_t reg, uint32_t *value);
 
     /**
      * Read multiple bytes from a register

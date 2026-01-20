@@ -84,6 +84,16 @@ bool I2C_slave::write(uint8_t reg, uint8_t value)
     return true;
 }
 
+bool I2C_slave::write(uint8_t reg, uint16_t value)
+{
+    return write(reg, reinterpret_cast<uint8_t *>(&value), 2);
+}
+
+bool I2C_slave::write(uint8_t reg, uint32_t value)
+{
+    return write(reg, reinterpret_cast<uint8_t *>(&value), 4);
+}
+
 bool I2C_slave::write(uint8_t reg, uint8_t *data, uint32_t sdata)
 {
     struct i2c_msg msg;
@@ -160,6 +170,16 @@ bool I2C_slave::read(uint8_t reg, uint8_t *value)
         return false;
     }
     return true;
+}
+
+bool I2C_slave::read(uint8_t reg, uint16_t *value)
+{
+    return read(reg, reinterpret_cast<uint8_t *>(value), 2);
+}
+
+bool I2C_slave::read(uint8_t reg, uint32_t *value)
+{
+    return read(reg, reinterpret_cast<uint8_t *>(value), 4);
 }
 
 bool I2C_slave::read(uint8_t reg, uint8_t *data, uint32_t sdata)
