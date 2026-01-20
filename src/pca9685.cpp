@@ -20,11 +20,11 @@ bool PCA9685::init()
         return false;
 
     // Configure MODE1 : AI=1 (auto-increment), SLEEP=0 (mode normal)
-    if (!write(MODE1, 0x20)) // Bit AI = bit 5
+    if (!write(MODE1, (uint8_t)0x20)) // Bit AI = bit 5
         return false;
 
     // Configure MODE2 : OUTDRV=1 (totem pole, pas open-drain)
-    if (!write(MODE2, 0x04)) // Bit OUTDRV = bit 2
+    if (!write(MODE2, (uint8_t)0x04)) // Bit OUTDRV = bit 2
         return false;
 
     // Fréquence par défaut à 50Hz (courant pour les servos)
@@ -70,7 +70,7 @@ bool PCA9685::set_frequency(uint16_t frequency)
     usleep(500);
 
     // Redémarre avec auto-increment activé
-    if (!write(MODE1, old_mode | 0xA0)) // Active les bits RESTART + AI
+    if (!write(MODE1, (uint8_t)(old_mode | 0xA0))) // Active les bits RESTART + AI
         return false;
 
     return true;
@@ -171,7 +171,7 @@ bool PCA9685::reset()
         return false;
 
     // Étape 2: Mettre le chip en SLEEP (bit 4)
-    if (!write(MODE1, mode | SLEEP))
+    if (!write(MODE1, (uint8_t)(mode | SLEEP)))
         return false;
 
     // Attendre que le RESTART bit se mette à 1 automatiquement
@@ -190,7 +190,7 @@ bool PCA9685::reset()
 
     // Étape 3: Désactiver SLEEP (bit 4 = 0)
     // Ceci garde le RESTART bit à 1
-    if (!write(MODE1, mode & ~SLEEP))
+    if (!write(MODE1, (uint8_t)(mode & ~SLEEP)))
         return false;
 
     // Étape 4: Attendre 500µs minimum pour que l'oscillateur se stabilise
@@ -198,7 +198,7 @@ bool PCA9685::reset()
 
     // Étape 5: Écrire 1 dans le bit RESTART pour redémarrer tous les canaux PWM
     // Le bit RESTART se remet à 0 automatiquement après écriture
-    if (!write(MODE1, mode | RESTART))
+    if (!write(MODE1, (uint8_t)(mode | RESTART)))
         return false;
 
     return true;
