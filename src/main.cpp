@@ -105,18 +105,17 @@ int test_vl53l0x()
     printf("Mesure de distance...\n");
     while (1)
     {
-        uint16_t distance = dev.readRangeSingleMillimeters();
-
-        if (dev.timeoutOccurred())
+        uint16_t distancemoyenne = 0;
+        for (int i = 0; i < 20; i++)
         {
-            printf("Timeout !\n");
+            uint16_t distance = dev.readRangeSingleMillimeters();
+            distancemoyenne += distance;
+            if (dev.timeoutOccurred())
+            {
+                printf("Timeout !\n");
+            }
         }
-        else
-        {
-            // Correction logicielle simple si tu ne veux pas toucher aux registres :
-            // distance += 10;
-            printf("Distance : %u mm\n", distance);
-        }
+        printf("Distance : %u mm\n", distancemoyenne / 20);
         usleep(100000);
     }
     return EXIT_SUCCESS;
