@@ -112,7 +112,9 @@ int test_vl53l0x()
         fprintf(stderr, "Erreur mesure distance VL53L0X\n");
         return EXIT_FAILURE;
     }
-    printf("Distance mesurée : %u mm\n", distance-8);
+    if(distance < 8) { distance += 10;}
+    else if(distance > 8) {distance -= 10;}
+    printf("Distance mesurée : %u mm\n", distance);
     return EXIT_SUCCESS;
 }
 
