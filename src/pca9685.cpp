@@ -164,42 +164,13 @@ bool PCA9685::set_pwm(uint8_t channel, uint16_t duty)
  */
 bool PCA9685::reset()
 {
-    uint8_t mode = 0;
-
-    // Étape 1: Lire le MODE1 actuel
-    if (!read(MODE1, &mode))
+    // Registre MODE1 (0x00), Valeur 0x80 (Bit 7 : RESTART)
+    // On écrit d'abord 0x00 pour sortir de certains états, puis on reset.
+    if (!write(0x00, (uint8_t)0x00))
         return false;
+    usleep(5000);
 
-    // Étape 2: Mettre le chip en SLEEP (bit 4)
-    if (!write(MODE1, (uint8_t)(mode | SLEEP)))
-        return false;
-
-    // Attendre que le RESTART bit se mette à 1 automatiquement
-    // (généralement ~1ms après le SLEEP)
-    usleep(1000);
-
-    // Vérifier que le bit RESTART est bien passé à 1
-    if (!read(MODE1, &mode))
-        return false;
-
-    if ((mode & RESTART) == 0)
-    {
-        fprintf(stderr, "Erreur reset PCA9685: RESTART bit not set\n");
-        return false;
-    }
-
-    // Étape 3: Désactiver SLEEP (bit 4 = 0)
-    // Ceci garde le RESTART bit à 1
-    if (!write(MODE1, (uint8_t)(mode & ~SLEEP)))
-        return false;
-
-    // Étape 4: Attendre 500µs minimum pour que l'oscillateur se stabilise
-    usleep(500);
-
-    // Étape 5: Écrire 1 dans le bit RESTART pour redémarrer tous les canaux PWM
-    // Le bit RESTART se remet à 0 automatiquement après écriture
-    if (!write(MODE1, (uint8_t)(mode | RESTART)))
-        return false;
-
-    return true;
+    // Un reset logiciel complet via le registre MODE1
+    // La plupart des drivers écrivent 0x00 puis configurent le prescaler.
+    return write(0x00, (uint8_t)0x80);
 }
