@@ -106,7 +106,7 @@ int test_vl53l0x()
     while (1)
     {
         uint16_t distancemoyenne = 0;
-        for (int i = 0; i < 20; i++)
+        for (int i = 0; i < 30; i++)
         {
             uint16_t distance = dev.readRangeSingleMillimeters();
             distancemoyenne += distance;
@@ -116,7 +116,7 @@ int test_vl53l0x()
             }
         }
         printf("Distance : %u mm\n", distancemoyenne / 20);
-        usleep(100000);
+        usleep(50000);
     }
     return EXIT_SUCCESS;
 }
