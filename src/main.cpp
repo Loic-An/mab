@@ -7,6 +7,7 @@
 #include "vl53l0x.hpp"
 #include "main_matrix.cpp"
 #include "main_rows.cpp"
+#include "pca9685.hpp"
 
 int test_freenect_sync()
 {
@@ -116,6 +117,12 @@ int test_vl53l0x()
     return EXIT_SUCCESS;
 }
 
+int test_PCA9385(){
+    PCA9685 dev;
+    dev.init();
+    dev.set_time(0,0,4095);
+}
+
 int test(int argc, char **argv)
 {
     if (argc > 2)
@@ -147,6 +154,10 @@ int test(int argc, char **argv)
     else if (argv[1] == std::string("motors"))
     {
         return main_motors();
+    }
+     else if (argv[1] == std::string("pca9685"))
+    {
+        return test_PCA9385();
     }
     else if (argv[1] == std::string("all"))
     {
