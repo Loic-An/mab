@@ -103,24 +103,30 @@ int test_vl53l0x()
     }
     printf("VL53L0X initialisé avec succès\n");
     printf("Mesure de distance...\n");
-    uint16_t distance = dev.readRangeSingleMillimeters();
-    if (distance == 65535 || dev.timeoutOccurred()) {
-        fprintf(stderr, "Erreur : Timeout ou échec de lecture\n");
-        return EXIT_FAILURE;
-    }
-    if (errno)
+    while (1)
     {
-        fprintf(stderr, "Erreur mesure distance VL53L0X\n");
-        return EXIT_FAILURE;
+        uint16_t distance = dev.readRangeSingleMillimeters();
+        if (distance == 65535 || dev.timeoutOccurred())
+        {
+            fprintf(stderr, "Erreur : Timeout ou échec de lecture\n");
+            return EXIT_FAILURE;
+        }
+        if (errno)
+        {
+            fprintf(stderr, "Erreur mesure distance VL53L0X\n");
+            return EXIT_FAILURE;
+        }
+        printf("Distance mesurée : %u mm\n", distance);
     }
-    printf("Distance mesurée : %u mm\n", distance);
     return EXIT_SUCCESS;
 }
 
-int test_PCA9385(){
+int test_PCA9385()
+{
     PCA9685 dev;
     dev.init();
-    dev.set_time(0,0,4095);
+    dev.set_time(0, 0, 4095);
+    usleep(2000000);
 }
 
 int test(int argc, char **argv)
@@ -155,7 +161,7 @@ int test(int argc, char **argv)
     {
         return main_motors();
     }
-     else if (argv[1] == std::string("pca9685"))
+    else if (argv[1] == std::string("pca9685"))
     {
         return test_PCA9385();
     }
