@@ -791,19 +791,26 @@ void VL53L0X::stopContinuous()
 uint16_t VL53L0X::readRangeContinuousMillimeters()
 {
   startTimeout();
-  while ((readReg(RESULT_INTERRUPT_STATUS) & 0x07) == 0)
+  uint8_t status = 0;
+  
+  // 1. Attente du bit "Data Ready" sur le registre 0x13
+  while (((status = readReg(RESULT_INTERRUPT_STATUS)) & 0x07) == 0)
   {
     if (checkTimeoutExpired())
     {
+      printf("DEBUG: Timeout en attendant le bit de statut (Reg 0x13 = 0x%02X)\n", status);
       did_timeout = true;
       return 65535;
     }
+    usleep(1000); // Laisse un peu de temps au CPU
   }
 
-  // assumptions: Linearity Corrective Gain is 1000 (default);
-  // fractional ranging is not enabled
-  uint16_t range = readReg16Bit(RESULT_RANGE_STATUS + 10);
+  // 2. Lecture du résultat (0x1E) avec inversion d'octets MANUELLE
+  uint8_t buffer[2];
+  readMulti(0x1E, buffer, 2); 
+  uint16_t range = (uint16_t)((buffer[0] << 8) | buffer[1]);
 
+  // 3. Clear l'interruption pour la prochaine mesure
   writeReg(SYSTEM_INTERRUPT_CLEAR, 0x01);
 
   return range;
