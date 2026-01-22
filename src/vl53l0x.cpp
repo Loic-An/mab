@@ -80,6 +80,7 @@ bool VL53L0X::init(bool io_2v8)
   writeReg(0xFF, 0x01);
   writeReg(0x00, 0x00);
   stop_variable = readReg(0x91);
+  printf("DEBUG: stop_variable lue = 0x%02X\n", stop_variable);
   writeReg(0x00, 0x01);
   writeReg(0xFF, 0x00);
   writeReg(0x80, 0x00);
