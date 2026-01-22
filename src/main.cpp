@@ -115,8 +115,8 @@ int test_vl53l0x()
                 printf("Timeout !\n");
             }
         }
-        printf("Distance : %u mm\n", distancemoyenne / 20);
-        usleep(50000);
+        printf("Distance : %u mm\n", distancemoyenne / 30);
+        usleep(1000);
     }
     return EXIT_SUCCESS;
 }
