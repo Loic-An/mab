@@ -177,8 +177,11 @@ int test(int argc, char **argv)
     }
     else if (argv[1] == std::string("vl53l0x"))
     {
-        // Exemple de test : initialisation du VL53L0X
         return test_vl53l0x();
+    }
+    else if (argv[1] == std::string("vl53l0xv2"))
+    {
+        return test_vl53l0x2();
     }
     else if (argv[1] == std::string("matrix"))
     {
