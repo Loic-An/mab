@@ -1035,31 +1035,3 @@ bool VL53L0X::performSingleRefCalibration(uint8_t vhv_init_byte)
   return true;
 }
 
-int32_t VL53L0X::calibrateOffset(uint16_t target_dist_mm) {
-    int32_t sum = 0;
-    const int num_samples = 20;
-    
-    printf("Calibration en cours : placez une cible à %u mm...\n", target_dist_mm);
-    
-    for (int i = 0; i < num_samples; i++) {
-        uint16_t dist = readRangeSingleMillimeters();
-        if (dist != 65535) {
-            sum += dist;
-        }
-        usleep(50000); // 50ms entre chaque mesure
-    }
-    
-    int16_t average_dist = sum / num_samples;
-    int16_t offset = target_dist_mm - average_dist;
-    
-    printf("Distance moyenne lue : %d mm | Offset calculé : %d mm\n", average_dist, offset);
-    
-    setOffset(offset);
-    return offset;
-}
-
-void VL53L0X::setOffset(int16_t offset_mm) {
-    // Le registre ALGO_PART_TO_PART_RANGE_OFFSET_MM attend une valeur en 12.4 fixed point
-    // Mais l'API simplifiée permet d'écrire l'offset directement en mm (x4 selon datasheet ST)
-    writeReg16Bit(ALGO_PART_TO_PART_RANGE_OFFSET_MM, (int16_t)(offset_mm * 4));
-}

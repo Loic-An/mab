@@ -95,27 +95,25 @@ int test_freenect_async(freenect_context *ctx, freenect_device *dev)
 int test_vl53l0x()
 {
     VL53L0X dev;
-    if (!dev.init()) {
-        fprintf(stderr, "Erreur init\n");
+    if (!dev.init())
+    {
+        fprintf(stderr, "Erreur initialisation VL53L0X\n");
         return EXIT_FAILURE;
     }
-
-    dev.setTimeout(500);
-    dev.calibrateOffset(100); 
-
-    printf("Mesure de distance corrigée...\n");
-    
-    while(1) {
-        uint16_t distance = dev.readRangeSingleMillimeters();
-        
-        if (dev.timeoutOccurred()) {
-            printf("Timeout !\n");
-        } else {
-            printf("Distance : %u mm\n", distance);
-        }
-        usleep(200000);
+    printf("VL53L0X initialisé avec succès\n");
+    printf("Mesure de distance...\n");
+    uint16_t distance = dev.readRangeSingleMillimeters();
+    printf("Distance : %d \n", distance);
+    if (distance == 65535 || dev.timeoutOccurred()) {
+        fprintf(stderr, "Erreur : Timeout ou échec de lecture\n");
+        return EXIT_FAILURE;
     }
-
+    if (errno)
+    {
+        fprintf(stderr, "Erreur mesure distance VL53L0X\n");
+        return EXIT_FAILURE;
+    }
+    printf("Distance mesurée : %u mm\n", distance);
     return EXIT_SUCCESS;
 }
 
