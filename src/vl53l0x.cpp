@@ -311,12 +311,13 @@ void VL53L0X::writeReg32Bit(uint8_t reg, uint32_t value)
 }
 
 // Read an 8-bit register
-uint16_t VL53L0X::readReg16Bit(uint8_t reg) {
-    uint8_t buffer[2];
-    read(reg, buffer, 2); // Utilise la version uint8_t* de ta méthode read
-    return (uint16_t)((buffer[0] << 8) | buffer[1]);
+uint8_t VL53L0X::readReg(uint8_t reg)
+{
+  uint8_t value;
+  read(reg, &value);
+
+  return value;
 }
-// Applique la même logique pour writeReg16Bit, readReg32Bit, etc.
 
 // Read a 16-bit register
 uint16_t VL53L0X::readReg16Bit(uint8_t reg)
@@ -341,6 +342,7 @@ uint32_t VL53L0X::readReg32Bit(uint8_t reg)
          ((uint32_t)buffer[2] << 8)  |
          (uint32_t)buffer[3];
 }
+
 // Write an arbitrary number of bytes from the given array to the sensor,
 // starting at the given register
 void VL53L0X::writeMulti(uint8_t reg, uint8_t const *src, uint8_t count)
