@@ -101,10 +101,7 @@ int test_vl53l0x()
     }
 
     dev.setTimeout(500);
-
-    // ÉTAPE DE CALIBRATION (à faire une seule fois ou au démarrage)
-    // Place un carton à exactement 100mm du capteur
-    // dev.calibrateOffset(100); 
+    dev.calibrateOffset(100); 
 
     printf("Mesure de distance corrigée...\n");
     
@@ -114,11 +111,9 @@ int test_vl53l0x()
         if (dev.timeoutOccurred()) {
             printf("Timeout !\n");
         } else {
-            // Correction logicielle simple si tu ne veux pas toucher aux registres :
-            // distance += 10; 
             printf("Distance : %u mm\n", distance);
         }
-        usleep(100000);
+        usleep(200000);
     }
 
     return EXIT_SUCCESS;

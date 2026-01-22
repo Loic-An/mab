@@ -51,6 +51,12 @@ public:
 
     void writeMulti(uint8_t reg, uint8_t const *src, uint8_t count);
     void readMulti(uint8_t reg, uint8_t *dst, uint8_t count);
+     // Calcule l'offset moyen en fonction d'une distance réelle connue
+    // target_dist_mm : la distance réelle où tu as placé ta cible (ex: 100mm)
+    int32_t calibrateOffset(uint16_t target_dist_mm);
+
+    // Applique un offset manuellement (en mm)
+    void setOffset(int16_t offset_mm);
 
 private:
     // Adresses des registres VL53L0X
@@ -90,12 +96,7 @@ private:
     static uint16_t encodeTimeout(uint32_t timeout_mclks);
     static uint32_t timeoutMclksToMicroseconds(uint16_t timeout_period_mclks, uint8_t vcsel_period_pclks);
     static uint32_t timeoutMicrosecondsToMclks(uint32_t timeout_period_us, uint8_t vcsel_period_pclks);
-    // Calcule l'offset moyen en fonction d'une distance réelle connue
-    // target_dist_mm : la distance réelle où tu as placé ta cible (ex: 100mm)
-    int32_t calibrateOffset(uint16_t target_dist_mm);
-
-    // Applique un offset manuellement (en mm)
-    void setOffset(int16_t offset_mm);
+   
 
 };
 
