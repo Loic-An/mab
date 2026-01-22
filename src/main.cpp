@@ -101,6 +101,7 @@ int test_vl53l0x()
         fprintf(stderr, "Erreur initialisation VL53L0X\n");
         return EXIT_FAILURE;
     }
+    dev.setMeasurementTimingBudget(200000);
     printf("VL53L0X initialisé avec succès\n");
     printf("Mesure de distance...\n");
     while (1)
