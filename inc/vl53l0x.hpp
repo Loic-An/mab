@@ -1,6 +1,7 @@
 #pragma once
 #include "vl53l0x_types.hpp"
 #include "i2c_slave.hpp"
+#include <math.h>
 
 // Default I2C address for VL53L0X
 #define ADDRESS_DEFAULT 0b0101001
@@ -51,7 +52,6 @@ public:
 
     void writeMulti(uint8_t reg, uint8_t const *src, uint8_t count);
     void readMulti(uint8_t reg, uint8_t *dst, uint8_t count);
-  
 
 private:
     // Adresses des registres VL53L0X
@@ -91,7 +91,29 @@ private:
     static uint16_t encodeTimeout(uint32_t timeout_mclks);
     static uint32_t timeoutMclksToMicroseconds(uint16_t timeout_period_mclks, uint8_t vcsel_period_pclks);
     static uint32_t timeoutMicrosecondsToMclks(uint32_t timeout_period_us, uint8_t vcsel_period_pclks);
-   
-
 };
 
+class KalmanFilter
+{
+private:
+    float _err_measure;  // Erreur de mesure (bruit du capteur)
+    float _err_estimate; // Erreur d'estimation
+    float _q;            // Bruit de processus (vitesse de réaction)
+    float _current_estimate = 0;
+    float _last_estimate = 0;
+    float _kalman_gain = 0;
+
+public:
+    KalmanFilter(float mea_e, float est_e, float q)
+        : _err_measure(mea_e), _err_estimate(est_e), _q(q) {}
+
+    float updateEstimate(float value)
+    {
+        _kalman_gain = _err_estimate / (_err_estimate + _err_measure);
+        _current_estimate = _last_estimate + _kalman_gain * (value - _last_estimate);
+        _err_estimate = (1.0 - _kalman_gain) * _err_estimate + fabsf(_last_estimate - _current_estimate) * _q;
+        _last_estimate = _current_estimate;
+
+        return _current_estimate;
+    }
+};

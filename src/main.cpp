@@ -101,7 +101,6 @@ int test_vl53l0x()
         fprintf(stderr, "Erreur initialisation VL53L0X\n");
         return EXIT_FAILURE;
     }
-    dev.setMeasurementTimingBudget(200000);
     printf("VL53L0X initialisé avec succès\n");
     printf("Mesure de distance...\n");
     while (1)
@@ -118,6 +117,33 @@ int test_vl53l0x()
         }
         printf("Distance : %u mm\n", distancemoyenne / 30);
         usleep(1000);
+    }
+    return EXIT_SUCCESS;
+}
+
+int test_vl53l0x2()
+{
+    VL53L0X dev;
+    if (!dev.init())
+        return EXIT_FAILURE;
+
+    // Paramètres : (Erreur mesure, Erreur estimation, Bruit processus)
+    // Plus l'erreur de mesure est grande, plus le lissage est fort.
+    KalmanFilter filter(20.0, 20.0, 0.05);
+
+    // TRÈS IMPORTANT : Augmenter le budget pour aider le filtre
+    dev.setMeasurementTimingBudget(100000); // 100ms
+
+    while (1)
+    {
+        uint16_t raw = dev.readRangeSingleMillimeters();
+
+        if (raw != 65535 && !dev.timeoutOccurred())
+        {
+            float clean = filter.updateEstimate((float)raw);
+            printf("BRUT: %4u mm | FILTRÉ: %6.1f mm\n", raw, clean);
+        }
+        usleep(50000); // 50ms
     }
     return EXIT_SUCCESS;
 }

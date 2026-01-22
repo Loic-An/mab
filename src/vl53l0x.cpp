@@ -302,20 +302,20 @@ void VL53L0X::writeReg(uint8_t reg, uint8_t value)
 // Write a 16-bit register
 void VL53L0X::writeReg16Bit(uint8_t reg, uint16_t value)
 {
-    uint8_t buffer[2];
-    buffer[0] = (uint8_t)(value >> 8);   // Octet de poids fort (MSB)
-    buffer[1] = (uint8_t)(value & 0xFF); // Octet de poids faible (LSB)
-    write(reg, buffer, (uint32_t)2);
+  uint8_t buffer[2];
+  buffer[0] = (uint8_t)(value >> 8);   // Octet de poids fort (MSB)
+  buffer[1] = (uint8_t)(value & 0xFF); // Octet de poids faible (LSB)
+  write(reg, buffer, (uint32_t)2);
 }
 // Write a 32-bit register
 void VL53L0X::writeReg32Bit(uint8_t reg, uint32_t value)
 {
-    uint8_t buffer[4];
-    buffer[0] = (uint8_t)(value >> 24);
-    buffer[1] = (uint8_t)(value >> 16);
-    buffer[2] = (uint8_t)(value >> 8);
-    buffer[3] = (uint8_t)(value & 0xFF);
-    write(reg, buffer, (uint32_t)4);
+  uint8_t buffer[4];
+  buffer[0] = (uint8_t)(value >> 24);
+  buffer[1] = (uint8_t)(value >> 16);
+  buffer[2] = (uint8_t)(value >> 8);
+  buffer[3] = (uint8_t)(value & 0xFF);
+  write(reg, buffer, (uint32_t)4);
 }
 
 // Read an 8-bit register
@@ -332,7 +332,8 @@ uint16_t VL53L0X::readReg16Bit(uint8_t reg)
 {
   uint8_t buffer[2];
   // On utilise la version "multiple bytes" de ta classe parente
-  if (!read(reg, buffer, 2)) return 0; 
+  if (!read(reg, buffer, 2))
+    return 0;
 
   // Assemblage manuel : (MSB << 8) | LSB
   return (uint16_t)((buffer[0] << 8) | buffer[1]);
@@ -342,12 +343,13 @@ uint16_t VL53L0X::readReg16Bit(uint8_t reg)
 uint32_t VL53L0X::readReg32Bit(uint8_t reg)
 {
   uint8_t buffer[4];
-  if (!read(reg, buffer, 4)) return 0;
+  if (!read(reg, buffer, 4))
+    return 0;
 
   // Assemblage : (Byte0 << 24) | (Byte1 << 16) | (Byte2 << 8) | Byte3
   return ((uint32_t)buffer[0] << 24) |
          ((uint32_t)buffer[1] << 16) |
-         ((uint32_t)buffer[2] << 8)  |
+         ((uint32_t)buffer[2] << 8) |
          (uint32_t)buffer[3];
 }
 
@@ -800,7 +802,7 @@ uint16_t VL53L0X::readRangeContinuousMillimeters()
 {
   startTimeout();
   uint8_t status = 0;
-  
+
   // 1. Attente du bit "Data Ready" sur le registre 0x13
   while (((status = readReg(RESULT_INTERRUPT_STATUS)) & 0x07) == 0)
   {
@@ -815,7 +817,7 @@ uint16_t VL53L0X::readRangeContinuousMillimeters()
 
   // 2. Lecture du résultat (0x1E) avec inversion d'octets MANUELLE
   uint8_t buffer[2];
-  readMulti(0x1E, buffer, 2); 
+  readMulti(0x1E, buffer, 2);
   uint16_t range = (uint16_t)((buffer[0] << 8) | buffer[1]);
 
   // 3. Clear l'interruption pour la prochaine mesure
@@ -852,8 +854,6 @@ uint16_t VL53L0X::readRangeSingleMillimeters()
 
   return readRangeContinuousMillimeters();
 }
-
-
 
 // Did a timeout occur in one of the read functions since the last call to
 // timeoutOccurred()?
@@ -1034,4 +1034,3 @@ bool VL53L0X::performSingleRefCalibration(uint8_t vhv_init_byte)
 
   return true;
 }
-
