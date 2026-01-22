@@ -302,13 +302,20 @@ void VL53L0X::writeReg(uint8_t reg, uint8_t value)
 // Write a 16-bit register
 void VL53L0X::writeReg16Bit(uint8_t reg, uint16_t value)
 {
-  write(reg, value);
+    uint8_t buffer[2];
+    buffer[0] = (uint8_t)(value >> 8);   // Octet de poids fort (MSB)
+    buffer[1] = (uint8_t)(value & 0xFF); // Octet de poids faible (LSB)
+    write(reg, buffer, (uint32_t)2);
 }
-
 // Write a 32-bit register
 void VL53L0X::writeReg32Bit(uint8_t reg, uint32_t value)
 {
-  write(reg, value);
+    uint8_t buffer[4];
+    buffer[0] = (uint8_t)(value >> 24);
+    buffer[1] = (uint8_t)(value >> 16);
+    buffer[2] = (uint8_t)(value >> 8);
+    buffer[3] = (uint8_t)(value & 0xFF);
+    write(reg, buffer, (uint32_t)4);
 }
 
 // Read an 8-bit register
