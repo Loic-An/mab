@@ -103,7 +103,11 @@ int test_vl53l0x()
     printf("VL53L0X initialisé avec succès\n");
     printf("Mesure de distance...\n");
     uint16_t distance = dev.readRangeSingleMillimeters();
-    if (!errno)
+    if (distance == 65535 || dev.timeoutOccurred()) {
+        fprintf(stderr, "Erreur : Timeout ou échec de lecture\n");
+        return EXIT_FAILURE;
+    }
+    if (errno)
     {
         fprintf(stderr, "Erreur mesure distance VL53L0X\n");
         return EXIT_FAILURE;
