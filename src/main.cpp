@@ -9,6 +9,7 @@
 #include "main_testmotors.cpp"
 #include "main_matrix.cpp"
 #include "main_rows.cpp"
+#include "main_final.cpp"
 
 int test_freenect_sync()
 {
@@ -161,6 +162,10 @@ int test(int argc, char **argv)
     else if (argv[1] == std::string("motors"))
     {
         return main_motors();
+    }
+    else if (argv[1] == std::string("final"))
+    {
+        return main_final();
     }
     else if (argv[1] == std::string("testmotors"))
     {
