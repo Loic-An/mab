@@ -15,7 +15,7 @@ PROGRAM := mab
 SRC := $(wildcard src/*.cpp)
 HEADERS_DIR := inc
 
-CFLAGS := -Wall -Wextra -O2 -I$(HEADERS_DIR)
+CFLAGS := -Wall -Wextra -O2 -I$(HEADERS_DIR) -I/usr/include/libfreenect
 LDFLAGS := -lfreenect -lfreenect_sync -lusb-1.0 -ludev -lpthread
 
 program: $(SRC)
