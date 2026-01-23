@@ -6,12 +6,8 @@
 #include <cmath>
 #include "pca9685.hpp"
 
-#ifndef COLS
 #define COLS 1
-#endif
-#ifndef ROWS
 #define ROWS 1
-#endif
 #define TOTAL_MOTORS (COLS * ROWS)
 
 extern volatile int should_exit;
