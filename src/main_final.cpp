@@ -6,6 +6,7 @@
 #include <cmath>
 #include "pca9685.hpp"
 
+// Ajuste ici le nombre de moteurs réels
 #define COLS 1
 #define ROWS 1
 #define TOTAL_MOTORS (COLS * ROWS)
@@ -27,7 +28,8 @@ struct MotorState
 };
 
 static MotorState moteurs[TOTAL_MOTORS];
-static PCA9685 pca(0x41);
+// On utilise un pointeur pour une initialisation propre dans le main
+static PCA9685 *pca = nullptr;
 
 static void render_ui()
 {
@@ -41,10 +43,8 @@ static void render_ui()
         for (int c = 0; c < COLS; c++)
         {
             int i = r * COLS + c;
-            // On dessine une barre de progression verticale ou horizontale
-            printf("M%d [%3.0f -> %3.0f mm] ", i, moteurs[i].current_pos, moteurs[i].target_pos);
+            printf("M%d [%3.1f -> %3.1f mm] ", i, moteurs[i].current_pos, moteurs[i].target_pos);
 
-            // Visualisation graphique simple
             int bars = (int)(moteurs[i].current_pos / 5.0f);
             printf("|");
             for (int b = 0; b < 20; b++)
@@ -85,7 +85,7 @@ static void process_kinect_logic(uint16_t *depth_buffer)
             if (samples > 0)
             {
                 float avg_d = (float)sum_depth / samples;
-                // Mapping : 600mm -> 100mm | 1200mm -> 0mm
+                // Mapping : Objet proche (600mm) -> 100mm | Loin (1200mm) -> 0mm
                 float target = 100.0f - ((avg_d - 600.0f) * (100.0f / 600.0f));
                 moteurs[motor_idx].target_pos = std::clamp(target, 0.0f, COURSE_MAX);
             }
@@ -101,55 +101,75 @@ static void drive_motors()
         int chA = i * 2;
         int chB = i * 2 + 1;
 
-        if (std::abs(diff) > 3.0)
+        if (std::abs(diff) > 2.0) // Seuil de tolérance réduit à 2mm
         {
             if (diff > 0)
             {
-                pca.set_pwm(chA, 4095);
-                pca.set_pwm(chB, 0);
+                pca->set_pwm(chA, 4095); // Monter
+                pca->set_pwm(chB, 0);
             }
             else
             {
-                pca.set_pwm(chA, 0);
-                pca.set_pwm(chB, 4095);
+                pca->set_pwm(chA, 0);
+                pca->set_pwm(chB, 4095); // Descendre
             }
-            // 0.16mm par itération (8mm/s / 50Hz)
+            // Odométrie : 8mm/s divisé par 50 itérations/sec = 0.16mm par itération
             moteurs[i].current_pos += (diff > 0 ? 0.16f : -0.16f);
         }
         else
         {
-            pca.set_pwm(chA, 0);
-            pca.set_pwm(chB, 0);
+            pca->set_pwm(chA, 0);
+            pca->set_pwm(chB, 0);
         }
     }
 }
 
-static int main_final()
+static int main_final() // Utilise int main() ou appelle main_final depuis ton vrai main
 {
     uint16_t *depth_buffer = NULL;
     uint32_t timestamp;
 
-    if (!pca.init())
+    // 1. Initialisation dynamique sur l'adresse détectée (0x41)
+    pca = new PCA9685(0x41);
+
+    printf("Recherche du PCA9685 sur 0x41...\n");
+    if (!pca->init())
     {
-        printf("Erreur: PCA9685 non trouvé sur le bus I2C\n");
-        return 1;
+        printf("ERREUR: PCA9685 non trouvé. On tente de forcer le démarrage...\n");
+        // Optionnel : return 1; si tu veux que ça s'arrête vraiment
     }
 
-    printf("\e[2J"); // Efface l'écran au démarrage
+    printf("\e[2J"); // Clear screen
 
     while (!should_exit)
     {
+        // Récupération de la profondeur
         int ret = freenect_sync_get_depth((void **)&depth_buffer, &timestamp, 0, FREENECT_DEPTH_11BIT);
+
         if (ret == 0)
         {
             process_kinect_logic(depth_buffer);
             drive_motors();
-            render_ui(); // Mise à jour de l'affichage
+            render_ui();
         }
-        usleep(20000);
+        else
+        {
+            // Si la Kinect ne répond pas, on affiche un message sans effacer l'UI
+            printf("\rAttente données Kinect...          ");
+            fflush(stdout);
+        }
+
+        usleep(20000); // 50 Hz
     }
 
+    // Nettoyage avant sortie
+    printf("\nArrêt en cours...\n");
     freenect_sync_stop();
-    pca.set_time_burst(new uint16_t[TOTAL_MOTORS * 2](), new uint16_t[TOTAL_MOTORS * 2]());
+
+    // Éteindre tous les moteurs
+    for (int i = 0; i < 16; i++)
+        pca->set_pwm(i, 0);
+
+    delete pca;
     return 0;
 }
