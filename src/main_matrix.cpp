@@ -7,10 +7,17 @@
 
 static int main_matrix()
 {
+
+    printf("\e[1;1H\e[2J");
+    freenect_sync_stop();
+
     uint16_t *depth_buffer = NULL;
     uint32_t timestamp;
 
-    printf("\e[1;1H\e[2J");
+    printf("Initialisation Kinect...\n");
+    // Un premier appel pour "réveiller" le hardware
+    freenect_sync_get_depth((void **)&depth_buffer, &timestamp, 0, FREENECT_DEPTH_11BIT);
+    usleep(500000); // Pause
 
     while (1)
     {
