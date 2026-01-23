@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <libfreenect/libfreenect_sync.h>
+#include <libfreenect_sync.h>
 #include <unistd.h>
 
 #define stepX 12
@@ -7,9 +7,18 @@
 
 static int main_matrix()
 {
-
+    freenect_context *ctx;
+    if (freenect_init(&ctx, NULL) < 0)
+    {
+        printf("ERREUR : freenect_init a échoué. Problème de libfreenect.\n");
+    }
+    else
+    {
+        int num_devices = freenect_num_devices(ctx);
+        printf("DEBUG : Nombre de Kinect détectées par le driver : %d\n", num_devices);
+        freenect_shutdown(ctx);
+    }
     printf("\e[1;1H\e[2J");
-    freenect_sync_stop();
 
     uint16_t *depth_buffer = NULL;
     uint32_t timestamp;

@@ -3,11 +3,12 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <string>
-#include <libfreenect/libfreenect_sync.h>
+#include <libfreenect_sync.h>
 #include "vl53l0x.hpp"
+#include "pca9685.hpp"
+#include "main_testmotors.cpp"
 #include "main_matrix.cpp"
 #include "main_rows.cpp"
-#include "pca9685.hpp"
 
 int test_freenect_sync()
 {
@@ -127,6 +128,7 @@ int test_PCA9385()
     dev.init();
     dev.set_time(0, 0, 4095);
     usleep(2000000);
+    return true;
 }
 
 int test(int argc, char **argv)
@@ -159,6 +161,10 @@ int test(int argc, char **argv)
     else if (argv[1] == std::string("motors"))
     {
         return main_motors();
+    }
+    else if (argv[1] == std::string("testmotors"))
+    {
+        return main_testmotors();
     }
     else if (argv[1] == std::string("pca9685"))
     {
