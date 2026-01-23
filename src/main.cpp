@@ -12,6 +12,9 @@
 #include "main_final.cpp"
 #include <signal.h>
 
+#define COLS 1
+#define ROWS 1
+
 // Global flag to signal shutdown
 volatile sig_atomic_t should_exit = 0;
 
