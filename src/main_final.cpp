@@ -98,8 +98,8 @@ static void drive_motors()
     for (int i = 0; i < TOTAL_MOTORS; i++)
     {
         float diff = moteurs[i].target_pos - moteurs[i].current_pos;
-        int chA = i * 2;
-        int chB = i * 2 + 1;
+        int chA = i * 2 + 14;
+        int chB = i * 2 + 15;
 
         if (std::abs(diff) > 2.0) // Seuil de tolérance réduit à 2mm
         {
