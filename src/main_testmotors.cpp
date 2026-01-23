@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <unistd.h>
 
+extern volatile int should_exit;
+
 static int main_testmotors()
 {
     freenect_context *ctx;

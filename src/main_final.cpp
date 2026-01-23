@@ -14,6 +14,8 @@
 #endif
 #define TOTAL_MOTORS (COLS * ROWS)
 
+extern volatile int should_exit;
+
 const int K_WIDTH = 640;
 const int K_HEIGHT = 480;
 const int ZONE_W = K_WIDTH / COLS;
@@ -140,7 +142,7 @@ static int main_final()
 
     printf("\e[2J"); // Efface l'écran au démarrage
 
-    while (1)
+    while (!should_exit)
     {
         int ret = freenect_sync_get_depth((void **)&depth_buffer, &timestamp, 0, FREENECT_DEPTH_11BIT);
         if (ret == 0)
@@ -151,5 +153,8 @@ static int main_final()
         }
         usleep(20000);
     }
+
+    freenect_sync_stop();
+    pca.set_time_burst(new uint16_t[TOTAL_MOTORS * 2](), new uint16_t[TOTAL_MOTORS * 2]());
     return 0;
 }

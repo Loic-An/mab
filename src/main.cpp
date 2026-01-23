@@ -10,6 +10,18 @@
 #include "main_matrix.cpp"
 #include "main_rows.cpp"
 #include "main_final.cpp"
+#include <signal.h>
+
+// Global flag to signal shutdown
+volatile sig_atomic_t should_exit = 0;
+
+// Signal handler function
+void signal_handler(int signal)
+{
+    (void)signal; // Unused parameter
+    should_exit = 1;
+    printf("\n\nArrêt du programme...\n");
+}
 
 int test_freenect_sync()
 {
@@ -200,6 +212,7 @@ int test(int argc, char **argv)
 
 int main(int argc, char **argv)
 {
+    signal(SIGINT, signal_handler);
     if (argc > 1)
         return test(argc, argv);
     return 0;

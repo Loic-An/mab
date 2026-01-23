@@ -5,6 +5,8 @@
 #define stepX 12
 #define stepY 12
 
+extern volatile int should_exit;
+
 static int main_matrix()
 {
     freenect_context *ctx;
@@ -28,7 +30,7 @@ static int main_matrix()
     freenect_sync_get_depth((void **)&depth_buffer, &timestamp, 0, FREENECT_DEPTH_11BIT);
     usleep(500000); // Pause
 
-    while (1)
+    while (!should_exit)
     {
         // On récupère la profondeur
         int ret = freenect_sync_get_depth((void **)&depth_buffer, &timestamp, 0, FREENECT_DEPTH_11BIT);
