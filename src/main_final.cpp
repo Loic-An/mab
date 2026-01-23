@@ -1,105 +1,133 @@
-#include <libfreenect/libfreenect_sync.h>
+#include <libfreenect_sync.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <algorithm>
+#include <vector>
 #include "pca9685.hpp"
 
-// Paramètres de la matrice
-#define NB_PINS_X 8
-#define NB_PINS_Y 8
-#define STEP_X (640 / NB_PINS_X)
-#define STEP_Y (480 / NB_PINS_Y)
+// MODIFIE CES VALEURS SELON TA MATRICE RÉELLE
+#define COLS 2 // Nombre de colonnes de moteurs
+#define ROWS 2 // Nombre de lignes de moteurs
+#define TOTAL_MOTORS (COLS * ROWS)
 
-// Paramètres mécaniques (À CALIBRER)
-const float MM_PAR_SECONDE = 5.0; // Vitesse de translation du pin à 100% PWM
-const float COURSE_MAX = 100.0;   // 100mm de translation
-const int PWM_VITESSE = 4095;     // 100% de puissance sur le PCA9685
+// Paramètres de la Kinect (Résolution standard)
+const int K_WIDTH = 640;
+const int K_HEIGHT = 480;
 
-struct Pin
+// Dimensions d'une zone de détection
+const int ZONE_W = K_WIDTH / COLS;
+const int ZONE_H = K_HEIGHT / ROWS;
+
+// Paramètres de mouvement
+const float VITESSE_MM_S = 8.0; // À ajuster selon tes N20
+const float COURSE_MAX = 100.0;
+
+struct MotorState
 {
-    float current_pos = 0; // Position estimée en mm
-    float target_pos = 0;  // Position demandée par la Kinect
+    float current_pos = 0;
+    float target_pos = 0;
 };
 
-Pin matrice[NB_PINS_X][NB_PINS_Y];
+MotorState moteurs[TOTAL_MOTORS];
 PCA9685 pca;
 
-void update_motors()
+void process_kinect_logic(uint16_t *depth_buffer)
 {
-    for (int y = 0; y < NB_PINS_Y; y++)
+    for (int r = 0; r < ROWS; r++)
     {
-        for (int x = 0; x < NB_PINS_X; x++)
+        for (int c = 0; c < COLS; c++)
         {
-            float diff = matrice[x][y].target_pos - matrice[x][y].current_pos;
+            int motor_idx = r * COLS + c;
 
-            if (abs(diff) > 2.0)
-            { // Tolérance de 2mm pour éviter les vibrations
-                // Calcul du temps pour bouger
-                float temps_mouvement = abs(diff) / MM_PAR_SECONDE;
+            // On calcule la moyenne de profondeur au centre de la zone
+            // pour éviter qu'un seul pixel bruité ne fasse bouger le moteur.
+            long sum_depth = 0;
+            int samples = 0;
 
-                // Direction (Selon ton câblage sur le pont en H)
-                if (diff > 0)
-                {
-                    // Monter le pin
-                    pca.set_pwm((uint8_t)(x + (y * NB_PINS_X)), (uint8_t)PWM_VITESSE);
-                }
-                else
-                {
-                    // Descendre le pin
-                    pca.set_pwm((uint8_t)(x + (y * NB_PINS_X)), (uint8_t)PWM_VITESSE);
-                }
+            // On scanne un petit carré de 20x20 pixels au centre de la zone
+            int centerX = c * ZONE_W + (ZONE_W / 2);
+            int centerY = r * ZONE_H + (ZONE_H / 2);
 
-                // Simulation du déplacement (Odométrie temps réel)
-                // Dans un code parfait, on utiliserait un timer non-bloquant.
-                // Ici pour demain, on peut simuler par petits pas :
-                usleep(10000);
-                matrice[x][y].current_pos += (diff > 0 ? 0.5 : -0.5);
-            }
-            else
+            for (int y = centerY - 10; y < centerY + 10; y++)
             {
-                // Arrêt du moteur
-                pca.set_pwm((uint8_t)(x + (y * NB_PINS_X)), (uint8_t)(0));
+                for (int x = centerX - 10; x < centerX + 10; x++)
+                {
+                    uint16_t d = depth_buffer[y * K_WIDTH + x];
+                    if (d > 0 && d < 2047)
+                    {
+                        sum_depth += d;
+                        samples++;
+                    }
+                }
+            }
+
+            if (samples > 0)
+            {
+                float avg_d = sum_depth / samples;
+
+                // Mapping : Objet proche (600mm) -> Cible 100mm | Objet loin (1200mm) -> Cible 0mm
+                float target = 100.0f - ((avg_d - 600.0f) * (100.0f / 600.0f));
+                moteurs[motor_idx].target_pos = std::clamp(target, 0.0f, COURSE_MAX);
             }
         }
     }
 }
 
-int main_kinect_to_motors()
+void drive_motors()
+{
+    for (int i = 0; i < TOTAL_MOTORS; i++)
+    {
+        float diff = moteurs[i].target_pos - moteurs[i].current_pos;
+
+        // Canaux pour le pont en H (Moteur 0 utilise 0 et 1, Moteur 1 utilise 2 et 3...)
+        int chA = i * 2;
+        int chB = i * 2 + 1;
+
+        // Seuil de 3mm pour éviter que les moteurs ne forcent inutilement
+        if (std::abs(diff) > 3.0)
+        {
+            if (diff > 0)
+            {
+                // MONTER
+                pca.set_pwm(chA, 4095); // 100% duty
+                pca.set_pwm(chB, 0);    // 0% duty
+            }
+            else
+            {
+                // DESCENDRE
+                pca.set_pwm(chA, 0);
+                pca.set_pwm(chB, 4095);
+            }
+            // Odométrie : on simule le mouvement
+            // Si VITESSE_MM_S = 8 et boucle à 50Hz, le pin bouge de 0.16mm par itération
+            moteurs[i].current_pos += (diff > 0 ? 0.16f : -0.16f);
+        }
+        else
+        {
+            // STOP
+            pca.set_pwm(chA, 0);
+            pca.set_pwm(chB, 0);
+        }
+    }
+}
+
+int main()
 {
     uint16_t *depth_buffer = NULL;
     uint32_t timestamp;
     pca.init();
 
-    printf("Démarrage du mapping Kinect -> Moteurs...\n");
+    printf("Matrice %dx%d prête. %d moteurs configurés.\n", COLS, ROWS, TOTAL_MOTORS);
 
     while (1)
     {
-        // 1. Récupération Depth
         int ret = freenect_sync_get_depth((void **)&depth_buffer, &timestamp, 0, FREENECT_DEPTH_11BIT);
-        if (ret != 0)
-            continue;
-
-        // 2. Analyse de la profondeur pour chaque Pin
-        for (int y = 0; y < NB_PINS_Y; y++)
+        if (ret == 0)
         {
-            for (int x = 0; x < NB_PINS_X; x++)
-            {
-                // On prend le pixel au centre de la zone du pin
-                uint16_t d = depth_buffer[(y * STEP_Y + STEP_Y / 2) * 640 + (x * STEP_X + STEP_X / 2)];
-
-                if (d > 0 && d < 2047)
-                {
-                    // Mapping : 600mm(proche) -> 100mm(pin haut) | 1200mm(loin) -> 0mm(pin bas)
-                    float target = 100.0f - ((float)(d - 600) * (100.0f / 600.0f));
-                    matrice[x][y].target_pos = std::clamp(target, 0.0f, 100.0f);
-                }
-            }
+            process_kinect_logic(depth_buffer);
+            drive_motors();
         }
-
-        // 3. Mise à jour des moteurs
-        update_motors();
-
-        usleep(10000); // 100Hz
+        usleep(20000); // Boucle à 50Hz
     }
     return 0;
 }
