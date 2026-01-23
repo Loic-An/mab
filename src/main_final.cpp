@@ -28,8 +28,8 @@ struct MotorState
     float target_pos = 0;
 };
 
-MotorState moteurs[TOTAL_MOTORS];
-PCA9685 pca;
+static MotorState moteurs[TOTAL_MOTORS];
+static PCA9685 pca;
 
 static void process_kinect_logic(uint16_t *depth_buffer)
 {
