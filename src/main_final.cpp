@@ -46,7 +46,7 @@ void update_motors()
                 else
                 {
                     // Descendre le pin
-                    pca.set_pwm((uint8_t)(x + (y * NB_PINS_X)), 0, (uint8_t)PWM_VITESSE);
+                    pca.set_pwm((uint8_t)(x + (y * NB_PINS_X)), (uint8_t)PWM_VITESSE);
                 }
 
                 // Simulation du déplacement (Odométrie temps réel)
