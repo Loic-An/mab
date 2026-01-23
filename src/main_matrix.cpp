@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <libfreenect_sync.h>
+#include <libfreenect/libfreenect_sync.h>
 #include <unistd.h>
 
 #define stepX 12

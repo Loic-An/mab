@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <string>
-#include <libfreenect_sync.h>
+#include <libfreenect/libfreenect_sync.h>
 #include "vl53l0x.hpp"
 #include "pca9685.hpp"
 #include "main_testmotors.cpp"

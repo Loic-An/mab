@@ -1,5 +1,4 @@
-#include <libfreenect.h>
-#include <stdio.h>
+#include <libfreenect/libfreenect_sync.h>
 #include <unistd.h>
 
 static int main_testmotors()
