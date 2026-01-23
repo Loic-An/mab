@@ -1,4 +1,4 @@
-#include <libfreenect_sync.h>
+#include <libfreenect/libfreenect_sync.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <algorithm>
