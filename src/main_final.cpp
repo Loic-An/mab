@@ -41,12 +41,12 @@ void update_motors()
                 if (diff > 0)
                 {
                     // Monter le pin
-                    pca.set_pwm(x + (y * NB_PINS_X), PWM_VITESSE, 0);
+                    pca.set_pwm((uint8_t)(x + (y * NB_PINS_X)), (uint8_t)PWM_VITESSE);
                 }
                 else
                 {
                     // Descendre le pin
-                    pca.set_pwm(x + (y * NB_PINS_X), 0, PWM_VITESSE);
+                    pca.set_pwm((uint8_t)(x + (y * NB_PINS_X)), 0, (uint8_t)PWM_VITESSE);
                 }
 
                 // Simulation du déplacement (Odométrie temps réel)
@@ -58,7 +58,7 @@ void update_motors()
             else
             {
                 // Arrêt du moteur
-                pca.set_pwm(x + (y * NB_PINS_X), 0, 0);
+                pca.set_pwm((uint8_t)(x + (y * NB_PINS_X)), (uint8_t)(0));
             }
         }
     }
