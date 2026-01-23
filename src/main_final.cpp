@@ -6,8 +6,8 @@
 #include <cmath>
 #include "pca9685.hpp"
 
-#define COLS 2 // Ajuste selon ton besoin
-#define ROWS 2
+#define COLS 1
+#define ROWS 1
 #define TOTAL_MOTORS (COLS * ROWS)
 
 const int K_WIDTH = 640;
@@ -123,7 +123,7 @@ static void drive_motors()
     }
 }
 
-int main_final()
+static int main_final()
 {
     uint16_t *depth_buffer = NULL;
     uint32_t timestamp;
