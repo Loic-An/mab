@@ -3,10 +3,10 @@
 #include <unistd.h>
 
 #ifndef COLS
-#define COLS 2
+#define COLS 1
 #endif
 #ifndef ROWS
-#define ROWS 2
+#define ROWS 1
 #endif
 
 static int main_motors()
