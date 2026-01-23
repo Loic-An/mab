@@ -6,8 +6,8 @@
 #include "pca9685.hpp"
 
 // MODIFIE CES VALEURS SELON TA MATRICE RÉELLE
-#define COLS 2 // Nombre de colonnes de moteurs
-#define ROWS 2 // Nombre de lignes de moteurs
+#define COLS 1 // Nombre de colonnes de moteurs
+#define ROWS 1 // Nombre de lignes de moteurs
 #define TOTAL_MOTORS (COLS * ROWS)
 
 // Paramètres de la Kinect (Résolution standard)
