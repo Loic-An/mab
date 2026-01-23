@@ -1,4 +1,4 @@
-#include <libfreenect/libfreenect_sync.h>
+#include <libfreenect_sync.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <algorithm>
@@ -6,8 +6,12 @@
 #include <cmath>
 #include "pca9685.hpp"
 
+#ifndef COLS
 #define COLS 1
+#endif
+#ifndef ROWS
 #define ROWS 1
+#endif
 #define TOTAL_MOTORS (COLS * ROWS)
 
 const int K_WIDTH = 640;

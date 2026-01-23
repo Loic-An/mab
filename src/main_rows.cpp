@@ -1,9 +1,13 @@
 #include <stdio.h>
-#include <libfreenect/libfreenect_sync.h>
+#include <libfreenect_sync.h>
 #include <unistd.h>
 
-#define ROWS 2
+#ifndef COLS
 #define COLS 2
+#endif
+#ifndef ROWS
+#define ROWS 2
+#endif
 
 static int main_motors()
 {
