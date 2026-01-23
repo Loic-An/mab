@@ -121,33 +121,6 @@ int test_vl53l0x()
     return EXIT_SUCCESS;
 }
 
-int test_vl53l0x2()
-{
-    VL53L0X dev;
-    if (!dev.init())
-        return EXIT_FAILURE;
-
-    // Paramètres : (Erreur mesure, Erreur estimation, Bruit processus)
-    // Plus l'erreur de mesure est grande, plus le lissage est fort.
-    KalmanFilter filter(20.0, 20.0, 0.05);
-
-    // TRÈS IMPORTANT : Augmenter le budget pour aider le filtre
-    dev.setMeasurementTimingBudget(100000); // 100ms
-
-    while (1)
-    {
-        uint16_t raw = dev.readRangeSingleMillimeters();
-
-        if (raw != 65535 && !dev.timeoutOccurred())
-        {
-            float clean = filter.updateEstimate((float)raw);
-            printf("BRUT: %4u mm | FILTRÉ: %6.1f mm\n", raw, clean);
-        }
-        usleep(50000); // 50ms
-    }
-    return EXIT_SUCCESS;
-}
-
 int test_PCA9385()
 {
     PCA9685 dev;
@@ -178,10 +151,6 @@ int test(int argc, char **argv)
     else if (argv[1] == std::string("vl53l0x"))
     {
         return test_vl53l0x();
-    }
-    else if (argv[1] == std::string("vl53l0xv2"))
-    {
-        return test_vl53l0x2();
     }
     else if (argv[1] == std::string("matrix"))
     {
