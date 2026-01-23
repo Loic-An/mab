@@ -31,7 +31,7 @@ struct MotorState
 MotorState moteurs[TOTAL_MOTORS];
 PCA9685 pca;
 
-void process_kinect_logic(uint16_t *depth_buffer)
+static void process_kinect_logic(uint16_t *depth_buffer)
 {
     for (int r = 0; r < ROWS; r++)
     {
@@ -73,7 +73,7 @@ void process_kinect_logic(uint16_t *depth_buffer)
     }
 }
 
-void drive_motors()
+static void drive_motors()
 {
     for (int i = 0; i < TOTAL_MOTORS; i++)
     {
@@ -111,7 +111,7 @@ void drive_motors()
     }
 }
 
-int main_final()
+static int main_final()
 {
     uint16_t *depth_buffer = NULL;
     uint32_t timestamp;
