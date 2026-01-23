@@ -111,7 +111,7 @@ void drive_motors()
     }
 }
 
-int main()
+int main_final()
 {
     uint16_t *depth_buffer = NULL;
     uint32_t timestamp;
