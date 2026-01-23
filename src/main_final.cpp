@@ -27,9 +27,8 @@ struct MotorState
 };
 
 static MotorState moteurs[TOTAL_MOTORS];
-static PCA9685 pca;
+static PCA9685 pca(0x41);
 
-// Fonction de rendu ASCII pour le debug
 static void render_ui()
 {
     printf("\e[H"); // Retour en haut à gauche
