@@ -130,7 +130,7 @@ static int main_final() // Utilise int main() ou appelle main_final depuis ton v
     uint32_t timestamp;
 
     // 1. Initialisation dynamique sur l'adresse détectée (0x41)
-    double a = 0x70;
+    double a = 0x40;
     pca = new PCA9685(a);
 
     printf("Recherche du PCA9685 sur %lf...\n", a);
