@@ -101,7 +101,7 @@ static void drive_motors()
         int chA = i * 2 + 14;
         int chB = i * 2 + 15;
 
-        if (std::abs(diff) > 2.0) // Seuil de tolérance réduit à 2mm
+        if (std::abs(diff) > 1.0) // Seuil de tolérance réduit à 2mm
         {
             if (diff > 0)
             {
@@ -135,8 +135,8 @@ static int main_final() // Utilise int main() ou appelle main_final depuis ton v
     printf("Recherche du PCA9685 sur 0x40...\n");
     if (!pca->init())
     {
-        printf("ERREUR: PCA9685 non trouvé. On tente de forcer le démarrage...\n");
-        // Optionnel : return 1; si tu veux que ça s'arrête vraiment
+        printf("ERREUR: PCA9685 non trouvé\n");
+        return 1;
     }
 
     printf("\e[2J"); // Clear screen
