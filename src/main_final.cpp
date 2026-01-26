@@ -132,7 +132,7 @@ static int main_final() // Utilise int main() ou appelle main_final depuis ton v
     // 1. Initialisation dynamique sur l'adresse détectée (0x41)
     pca = new PCA9685(0x40);
 
-    printf("Recherche du PCA9685 sur 0x41...\n");
+    printf("Recherche du PCA9685 sur 0x40...\n");
     if (!pca->init())
     {
         printf("ERREUR: PCA9685 non trouvé. On tente de forcer le démarrage...\n");
