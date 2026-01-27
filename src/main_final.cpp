@@ -178,6 +178,40 @@ static void reset_pins_to_zero()
     printf("\n[RESET] Terminé. Les pins sont à 0mm.\n\n");
 }
 
+static void show_freenect_viewport(uint16_t *depth_buffer)
+{
+    // Affichage de la vue Kinect (optionnel)
+    printf("\e[H");
+    for (int y = 0; y < 320; y += 12)
+    {
+        for (int x = 0; x < 640; x += 12)
+        {
+            uint16_t d = depth_buffer[y * 640 + x];
+            if (d >= 2047 || d == 0)
+            {
+                printf("    ");
+            }
+            else if (d < 600)
+            { // TRÈS PROCHE
+                printf(" ###");
+            }
+            else if (d < 950)
+            { // PROCHE
+                printf(" ooo");
+            }
+            else if (d < 1300)
+            { // MILIEU
+                printf(" ---");
+            }
+            else
+            { // LOIN
+                printf("  . ");
+            }
+        }
+        printf("\n");
+    }
+}
+
 static int main_final() // Utilise int main() ou appelle main_final depuis ton vrai main
 {
     uint16_t *depth_buffer = NULL;
@@ -205,6 +239,7 @@ static int main_final() // Utilise int main() ou appelle main_final depuis ton v
         {
             process_kinect_logic(depth_buffer);
             drive_motors();
+            show_freenect_viewport(depth_buffer); // Optionnel : afficher la vue Kinect
             render_ui();
         }
         else
