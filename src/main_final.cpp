@@ -187,9 +187,13 @@ static void show_freenect_viewport(uint16_t *depth_buffer)
         for (int x = 0; x < 640; x += 12)
         {
             uint16_t d = depth_buffer[y * 640 + x];
-            if (d >= 2047 || d == 0)
+            if (d >= 1200) // d>=2047 --- IGNORE ---
             {
-                printf(" OutR");
+                printf(" loin");
+            }
+            else if (d < 600)
+            {
+                printf(" prch");
             }
             else
             {
