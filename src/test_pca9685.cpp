@@ -22,11 +22,9 @@ static int main_pca9685()
 
     while (!should_exit)
     {
-        for (int i = 0; i < 4; i++)
-        {
-            pca.set_pwm(i, 2500); // 100% duty cycle
-            usleep(1000000);      // wait 500ms
-            pca.set_pwm(i, 0);    // turn off
-        }
+        pca.set_pwm(3, 2500); // 100% duty cycle
+        usleep(1000000);      // wait 500ms
+        pca.set_pwm(3, 0);    // turn off
+        usleep(1000000);      // wait 500ms
     }
 }
