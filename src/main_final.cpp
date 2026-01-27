@@ -144,7 +144,7 @@ static void reset_pins_to_zero()
     {
         printf("\rFin du reset dans %d secondes...  ", s);
         fflush(stdout);
-        sleep(1);
+        usleep(1000000);
     }
 
     // 3. On coupe le courant et on remet les compteurs à zéro
@@ -197,6 +197,7 @@ static int main_final() // Utilise int main() ou appelle main_final depuis ton v
 
         usleep(20000); // 50 Hz
     }
+    // On ramène tous les moteurs à la position zéro avant de quitter
     reset_pins_to_zero();
 
     // Nettoyage avant sortie
