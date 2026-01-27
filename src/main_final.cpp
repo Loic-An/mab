@@ -173,7 +173,7 @@ static void reset_pins_to_zero()
         pca.set_pwm(i, 0);
 }
 
-int main_final()
+static int main_final()
 {
     uint16_t *depth_buffer = NULL;
     uint32_t timestamp;
