@@ -30,52 +30,52 @@ struct MotorState
 {
     float current_pos = 0;
     float target_pos = 0;
+    float avg_depth_mm = 0; // Stocke la distance moyenne vue par la Kinect pour cette zone
 };
 
 static MotorState moteurs[TOTAL_MOTORS];
 static PCA9685 pca;
 
-// Affiche une représentation visuelle de ce que voit la Kinect
-static void show_matrix_viewport(uint16_t *depth_buffer)
-{
-    printf("\n--- VUE KINECT (Distances en cm) ---\n");
-    // On échantillonne la grille (ex: 20x15 caractères pour que ça tienne à l'écran)
-    int stX = K_WIDTH / 40;
-    int stY = K_HEIGHT / 20;
-
-    for (int y = 0; y < K_HEIGHT; y += stY)
-    {
-        for (int x = 0; x < K_WIDTH; x += stX)
-        {
-            uint16_t d = depth_buffer[y * K_WIDTH + x];
-            if (d == 0)
-                printf("  . "); // Pas de donnée
-            else if (d > 2500)
-                printf(" -- "); // Trop loin
-            else
-            {
-                // Affiche la distance en centimètres pour gagner de la place
-                printf("%3d ", d / 10);
-            }
-        }
-        printf("\n");
-    }
-}
-
 static void render_ui()
 {
-    printf("\e[H"); // Revient en haut de l'écran (sans effacer pour éviter le scintillement)
+    printf("\e[H");
     printf("===== SHAPE DISPLAY SYSTEM =====\n");
-    printf("Matrice: %dx%d | Vitesse: %.1f mm/s\n", COLS, ROWS, VITESSE_MM_S);
+    printf("Config: %dx%d | Sol: %.0fmm | Seuil Max: %.0fmm\n", COLS, ROWS, DIST_SOL, DIST_OBJ_MAX);
+    printf("------------------------------------------------------------\n");
 
     for (int i = 0; i < TOTAL_MOTORS; i++)
     {
-        printf("M%d [%3.1f -> %3.1f mm] ", i, moteurs[i].current_pos, moteurs[i].target_pos);
+        // Affichage : Index, Distance Kinect (mm), Position actuelle -> Cible (mm)
+        printf("M%d | Kinect: %4.0fmm | Pos: %4.1f -> %4.1fmm ",
+               i, moteurs[i].avg_depth_mm, moteurs[i].current_pos, moteurs[i].target_pos);
+
         int bars = (int)(moteurs[i].current_pos / (COURSE_MAX / 15.0f));
         printf("|");
         for (int b = 0; b < 15; b++)
             printf(b < bars ? "#" : " ");
-        printf("|  \n");
+        printf("|\n");
+    }
+}
+
+static void show_matrix_viewport(uint16_t *depth_buffer)
+{
+    printf("\n--- VUE KINECT (Distances en cm) ---\n");
+    int stepX = K_WIDTH / 40;
+    int stepY = K_HEIGHT / 20;
+
+    for (int y = 0; y < K_HEIGHT; y += stepY)
+    {
+        for (int x = 0; x < K_WIDTH; x += stepX)
+        {
+            uint16_t d = depth_buffer[y * K_WIDTH + x];
+            if (d == 0)
+                printf("  . ");
+            else if (d > 2500)
+                printf(" -- ");
+            else
+                printf("%3d ", d / 10);
+        }
+        printf("\n");
     }
 }
 
@@ -91,6 +91,7 @@ static void process_kinect_logic(uint16_t *depth_buffer)
             int centerX = c * ZONE_W + (ZONE_W / 2);
             int centerY = r * ZONE_H + (ZONE_H / 2);
 
+            // Zone d'échantillonnage de 40x40 pixels
             for (int y = centerY - 20; y < centerY + 20; y++)
             {
                 for (int x = centerX - 20; x < centerX + 20; x++)
@@ -98,8 +99,8 @@ static void process_kinect_logic(uint16_t *depth_buffer)
                     if (x < 0 || x >= K_WIDTH || y < 0 || y >= K_HEIGHT)
                         continue;
                     uint16_t d = depth_buffer[y * K_WIDTH + x];
-                    if (d > 400 && d < 2500)
-                    {
+                    if (d > 400 && d < 2400)
+                    { // Filtre les données aberrantes
                         sum_depth += d;
                         samples++;
                     }
@@ -108,13 +109,17 @@ static void process_kinect_logic(uint16_t *depth_buffer)
 
             if (samples > 0)
             {
-                float avg_mm = (float)sum_depth / samples;
-                float ratio = (DIST_SOL - avg_mm) / (DIST_SOL - DIST_OBJ_MAX);
+                moteurs[motor_idx].avg_depth_mm = (float)sum_depth / samples;
+
+                // Calcul du ratio de sortie du pin
+                float ratio = (DIST_SOL - moteurs[motor_idx].avg_depth_mm) / (DIST_SOL - DIST_OBJ_MAX);
                 moteurs[motor_idx].target_pos = std::clamp(ratio * COURSE_MAX, 0.0f, COURSE_MAX);
             }
             else
             {
-                moteurs[motor_idx].target_pos = 0; // Rien vu = Pin rentré
+                // Si aucun pixel valide n'est trouvé, on stabilise à 0 (sol supposé)
+                moteurs[motor_idx].avg_depth_mm = DIST_SOL;
+                moteurs[motor_idx].target_pos = 0;
             }
         }
     }
@@ -153,6 +158,8 @@ static void drive_motors()
     }
 }
 
+// ... (reste du code identique : reset_pins_to_zero et main_final) ...
+
 static void reset_pins_to_zero()
 {
     printf("\n[RESET] Descente des pins...\n");
@@ -166,7 +173,7 @@ static void reset_pins_to_zero()
         pca.set_pwm(i, 0);
 }
 
-static int main_final()
+int main_final()
 {
     uint16_t *depth_buffer = NULL;
     uint32_t timestamp;
@@ -176,7 +183,7 @@ static int main_final()
         return 1;
 
     reset_pins_to_zero();
-    printf("\e[2J"); // Clear screen une seule fois
+    printf("\e[2J");
 
     while (!should_exit)
     {
@@ -186,7 +193,7 @@ static int main_final()
             drive_motors();
 
             render_ui();
-            show_matrix_viewport(depth_buffer); // Affiche la matrice brute en dessous
+            show_matrix_viewport(depth_buffer);
         }
         usleep(20000);
     }
