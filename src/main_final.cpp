@@ -13,7 +13,7 @@
 extern volatile int should_exit;
 
 const int K_WIDTH = 640;
-const int K_HEIGHT = 480;
+const int K_HEIGHT = 320;
 const int ZONE_W = K_WIDTH / COLS;
 const int ZONE_H = K_HEIGHT / ROWS;
 
@@ -157,8 +157,6 @@ static void drive_motors()
         }
     }
 }
-
-// ... (reste du code identique : reset_pins_to_zero et main_final) ...
 
 static void reset_pins_to_zero()
 {
