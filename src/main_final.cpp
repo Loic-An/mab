@@ -113,8 +113,8 @@ static void drive_motors()
                 pca.set_pwm(chA, 0);
                 pca.set_pwm(chB, 4095); // Descendre
             }
-            // Odométrie : 8mm/s divisé par 50 itérations/sec = 0.16mm par itération
-            moteurs[i].current_pos += (diff > 0 ? 0.16f : -0.16f);
+            // Odométrie : 14mm/s divisé par 50 itérations/sec = 0.28mm par itération
+            moteurs[i].current_pos += (diff > 0 ? 0.28f : -0.28f);
         }
         else
         {
