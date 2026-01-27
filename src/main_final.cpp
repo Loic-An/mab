@@ -189,23 +189,11 @@ static void show_freenect_viewport(uint16_t *depth_buffer)
             uint16_t d = depth_buffer[y * 640 + x];
             if (d >= 2047 || d == 0)
             {
-                printf("    ");
-            }
-            else if (d < 600)
-            { // TRÈS PROCHE
-                printf(" ###");
-            }
-            else if (d < 950)
-            { // PROCHE
-                printf(" ooo");
-            }
-            else if (d < 1300)
-            { // MILIEU
-                printf(" ---");
+                printf(" OutR");
             }
             else
-            { // LOIN
-                printf("  . ");
+            {
+                printf(" %4d", d);
             }
         }
         printf("\n");
