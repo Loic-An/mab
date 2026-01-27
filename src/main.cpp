@@ -10,6 +10,7 @@
 #include "main_matrix.cpp"
 #include "main_rows.cpp"
 #include "main_final.cpp"
+#include "main_final2.cpp"
 #include "test_pca9685.cpp"
 #include <signal.h>
 
@@ -186,6 +187,10 @@ int test(int argc, char **argv)
     else if (argv[1] == std::string("final"))
     {
         return main_final();
+    }
+    else if (argv[1] == std::string("final2"))
+    {
+        return main_final2();
     }
     else if (argv[1] == std::string("testmotors"))
     {
