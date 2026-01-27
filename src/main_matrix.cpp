@@ -43,7 +43,7 @@ static int main_matrix()
 
         printf("\e[H");
 
-        for (int y = 0; y < 400; y += stepY)
+        for (int y = 0; y < 320; y += stepY)
         {
             for (int x = 0; x < 640; x += stepX)
             {

@@ -14,7 +14,7 @@
 extern volatile int should_exit;
 
 const int K_WIDTH = 640;
-const int K_HEIGHT = 400;
+const int K_HEIGHT = 320;
 const int ZONE_W = K_WIDTH / COLS;
 const int ZONE_H = K_HEIGHT / ROWS;
 
