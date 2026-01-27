@@ -40,12 +40,12 @@ static void show_matrix_viewport(uint16_t *depth_buffer)
 {
     printf("\n--- VUE KINECT (Distances en cm) ---\n");
     // On échantillonne la grille (ex: 20x15 caractères pour que ça tienne à l'écran)
-    int stepX = K_WIDTH / 40;
-    int stepY = K_HEIGHT / 20;
+    int stX = K_WIDTH / 40;
+    int stY = K_HEIGHT / 20;
 
-    for (int y = 0; y < K_HEIGHT; y += stepY)
+    for (int y = 0; y < K_HEIGHT; y += stY)
     {
-        for (int x = 0; x < K_WIDTH; x += stepX)
+        for (int x = 0; x < K_WIDTH; x += stX)
         {
             uint16_t d = depth_buffer[y * K_WIDTH + x];
             if (d == 0)
@@ -166,7 +166,7 @@ static void reset_pins_to_zero()
         pca.set_pwm(i, 0);
 }
 
-int main_final()
+static int main_final()
 {
     uint16_t *depth_buffer = NULL;
     uint32_t timestamp;
