@@ -23,8 +23,8 @@ const int VMAX = 4095;
 const int VOFF = 0;
 const int VMOY = 2500;
 
-const float DIST_SOL = 2000.0f;
-const float DIST_OBJ_MAX = 1400.0f;
+const float DIST_SOL = 900.0f;
+const float DIST_OBJ_MAX = 500.0f;
 
 struct MotorState
 {
