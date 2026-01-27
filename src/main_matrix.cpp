@@ -43,11 +43,11 @@ static int main_matrix()
 
         printf("\e[H");
 
-        for (int y = 0; y < 480; y += stepY)
+        for (int y = 0; y < 400; y += stepY)
         {
-            for (int x = 0; x < 480; x += stepX)
+            for (int x = 0; x < 640; x += stepX)
             {
-                uint16_t d = depth_buffer[y * 480 + x];
+                uint16_t d = depth_buffer[y * 640 + x];
 
                 // 2047 est le code "sans donnée" ou "trop proche/loin".
                 if (d >= 2047 || d == 0)
