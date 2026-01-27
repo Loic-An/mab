@@ -29,7 +29,7 @@ struct MotorState
 
 static MotorState moteurs[TOTAL_MOTORS];
 // On utilise un pointeur pour une initialisation propre dans le main
-static PCA9685 *pca = nullptr;
+static PCA9685 pca;
 
 static void render_ui()
 {
@@ -105,21 +105,21 @@ static void drive_motors()
         {
             if (diff > 0)
             {
-                pca->set_pwm(chA, 4095); // Monter
-                pca->set_pwm(chB, 0);
+                pca.set_pwm(chA, 4095); // Monter
+                pca.set_pwm(chB, 0);
             }
             else
             {
-                pca->set_pwm(chA, 0);
-                pca->set_pwm(chB, 4095); // Descendre
+                pca.set_pwm(chA, 0);
+                pca.set_pwm(chB, 4095); // Descendre
             }
             // Odométrie : 8mm/s divisé par 50 itérations/sec = 0.16mm par itération
             moteurs[i].current_pos += (diff > 0 ? 0.16f : -0.16f);
         }
         else
         {
-            pca->set_pwm(chA, 0);
-            pca->set_pwm(chB, 0);
+            pca.set_pwm(chA, 0);
+            pca.set_pwm(chB, 0);
         }
     }
 }
@@ -131,10 +131,10 @@ static int main_final() // Utilise int main() ou appelle main_final depuis ton v
 
     // 1. Initialisation dynamique sur l'adresse détectée (0x41)
     double a = 0x40;
-    pca = new PCA9685(a);
+    pca = PCA9685(a);
 
     printf("Recherche du PCA9685 sur %lf...\n", a);
-    if (!pca->init())
+    if (!pca.init())
     {
         printf("ERREUR: PCA9685 non trouvé\n");
         return 1;
@@ -169,8 +169,7 @@ static int main_final() // Utilise int main() ou appelle main_final depuis ton v
 
     // Éteindre tous les moteurs
     for (int i = 0; i < 16; i++)
-        pca->set_pwm(i, 0);
+        pca.set_pwm(i, 0);
 
-    delete pca;
     return 0;
 }
