@@ -8,13 +8,9 @@
 #include "pca9685.hpp"
 #include "main_testmotors.cpp"
 #include "main_matrix.cpp"
-#include "main_rows.cpp"
 #include "main_final.cpp"
 #include "test_pca9685.cpp"
 #include <signal.h>
-
-#define COLS 1
-#define ROWS 1
 
 // Global flag to signal shutdown
 volatile sig_atomic_t should_exit = 0;
@@ -178,10 +174,6 @@ int test(int argc, char **argv)
     else if (argv[1] == std::string("matrix"))
     {
         return main_matrix();
-    }
-    else if (argv[1] == std::string("motors"))
-    {
-        return main_motors();
     }
     else if (argv[1] == std::string("final"))
     {
