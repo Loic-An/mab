@@ -7,7 +7,7 @@
 #include "pca9685.hpp"
 
 #define COLS 2
-#define ROWS 1
+#define ROWS 2
 #define TOTAL_MOTORS (COLS * ROWS)
 
 extern volatile int should_exit;
