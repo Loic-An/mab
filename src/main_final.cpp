@@ -20,6 +20,9 @@ const int ZONE_H = K_HEIGHT / ROWS;
 
 const float VITESSE_MM_S = 14.0;
 const float COURSE_MAX = 55.0;
+const int VMAX = 4095;
+const int VOFF = 0;
+const int VMOY = 2045;
 
 struct MotorState
 {
@@ -105,13 +108,29 @@ static void drive_motors()
         {
             if (diff > 0)
             {
-                pca.set_pwm(chA, 4095); // Monter
-                pca.set_pwm(chB, 0);
+                if (diff > 25)
+                {
+                    pca.set_pwm(chA, VMAX); // Monter
+                    pca.set_pwm(chB, VOFF);
+                }
+                else
+                {
+                    pca.set_pwm(chA, VMOY); // Monter
+                    pca.set_pwm(chB, VOFF);
+                }
             }
             else
             {
-                pca.set_pwm(chA, 0);
-                pca.set_pwm(chB, 4095); // Descendre
+                if (diff < -25)
+                {
+                    pca.set_pwm(chA, VOFF); // Monter
+                    pca.set_pwm(chB, VMAX);
+                }
+                else
+                {
+                    pca.set_pwm(chA, VOFF);
+                    pca.set_pwm(chB, VMOY);
+                } // Descendre
             }
             // Odométrie : 14mm/s divisé par 50 itérations/sec = 0.28mm par itération
             moteurs[i].current_pos += (diff > 0 ? 0.28f : -0.28f);
