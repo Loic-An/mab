@@ -10,6 +10,7 @@
 #include "main_matrix.cpp"
 #include "main_rows.cpp"
 #include "main_final.cpp"
+#include "test_pca9685.cpp"
 #include <signal.h>
 
 #define COLS 1
@@ -169,6 +170,10 @@ int test(int argc, char **argv)
     else if (argv[1] == std::string("vl53l0x"))
     {
         return test_vl53l0x();
+    }
+    else if (argv[1] == std::string("testpca"))
+    {
+        return main_pca9685();
     }
     else if (argv[1] == std::string("matrix"))
     {
