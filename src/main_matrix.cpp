@@ -2,8 +2,8 @@
 #include <libfreenect_sync.h>
 #include <unistd.h>
 
-#define stepX 12
-#define stepY 12
+#define stX 12
+#define stY 12
 
 extern volatile int should_exit;
 
@@ -43,9 +43,9 @@ static int main_matrix()
 
         printf("\e[H");
 
-        for (int y = 0; y < 320; y += stepY)
+        for (int y = 0; y < 320; y += stY)
         {
-            for (int x = 0; x < 640; x += stepX)
+            for (int x = 0; x < 640; x += stX)
             {
                 uint16_t d = depth_buffer[y * 640 + x];
 
