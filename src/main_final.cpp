@@ -124,6 +124,41 @@ static void drive_motors()
     }
 }
 
+static void reset_pins_to_zero()
+{
+    printf("\n[RESET] Remise à zéro des pins en cours...\n");
+
+    // 1. On donne l'ordre de descendre à tous les moteurs
+    // On utilise une puissance de 2500 (environ 60%) pour ne pas brûler les moteurs en butée
+    for (int i = 0; i < TOTAL_MOTORS; i++)
+    {
+        pca.set_pwm(i * 2, 0);        // Canal A à 0
+        pca.set_pwm(i * 2 + 1, 2500); // Canal B à 2500 (Descente)
+    }
+
+    // 2. Temps d'attente
+    // Si la course est de 55mm à 14mm/s, il faut 4 secondes.
+    // On attend 5 secondes pour être sûr à 100%.
+    int wait_time = 5;
+    for (int s = wait_time; s > 0; s--)
+    {
+        printf("\rFin du reset dans %d secondes...  ", s);
+        fflush(stdout);
+        sleep(1);
+    }
+
+    // 3. On coupe le courant et on remet les compteurs à zéro
+    for (int i = 0; i < TOTAL_MOTORS; i++)
+    {
+        pca.set_pwm(i * 2, 0);
+        pca.set_pwm(i * 2 + 1, 0);
+
+        moteurs[i].current_pos = 0.0f; // Reset de l'odométrie
+        moteurs[i].target_pos = 0.0f;  // Reset de la cible
+    }
+    printf("\n[RESET] Terminé. Les pins sont à 0mm.\n\n");
+}
+
 static int main_final() // Utilise int main() ou appelle main_final depuis ton vrai main
 {
     uint16_t *depth_buffer = NULL;
@@ -162,6 +197,7 @@ static int main_final() // Utilise int main() ou appelle main_final depuis ton v
 
         usleep(20000); // 50 Hz
     }
+    reset_pins_to_zero();
 
     // Nettoyage avant sortie
     printf("\nArrêt en cours...\n");
