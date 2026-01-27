@@ -19,7 +19,7 @@ const int ZONE_W = K_WIDTH / COLS;
 const int ZONE_H = K_HEIGHT / ROWS;
 
 const float VITESSE_MM_S = 14.0;
-const float COURSE_MAX = 100.0;
+const float COURSE_MAX = 55.0;
 
 struct MotorState
 {
