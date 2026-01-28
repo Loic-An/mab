@@ -68,24 +68,24 @@ static void show_matrix_viewport(uint16_t *depth_buffer, unsigned char *color_bu
         for (int x = 0; x < K_WIDTH; x += stepX)
         {
             uint16_t d = depth_buffer[y * K_WIDTH + x];
-            if (color_buffer)
-            {
-                int pix = (y * K_WIDTH + x) * 3;
-                unsigned char r = color_buffer[pix + 0];
-                unsigned char g = color_buffer[pix + 1];
-                unsigned char b = color_buffer[pix + 2];
-                // print a 4-char wide colored block using background RGB
-                printf("\033[48;2;%u;%u;%um    \033[0m", r, g, b);
-            }
+            // if (color_buffer)
+            //{
+            //     int pix = (y * K_WIDTH + x) * 3;
+            //     unsigned char r = color_buffer[pix + 0];
+            //     unsigned char g = color_buffer[pix + 1];
+            //     unsigned char b = color_buffer[pix + 2];
+            //     // print a 4-char wide colored block using background RGB
+            //     printf("\033[48;2;%u;%u;%um    \033[0m", r, g, b);
+            // }
+            // else
+            //{
+            if (d == 0)
+                printf("  . ");
+            else if (d > 2500)
+                printf(" -- ");
             else
-            {
-                if (d == 0)
-                    printf("  . ");
-                else if (d > 2500)
-                    printf(" -- ");
-                else
-                    printf("%3d ", d / 10);
-            }
+                printf("%3d ", d / 10);
+            //}
         }
         printf("\n");
     }
@@ -197,7 +197,7 @@ static int main_final()
 
     while (!should_exit)
     {
-        freenect_sync_get_video((void **)&color_buffer, &timestamp, 0, FREENECT_VIDEO_RGB);
+        // freenect_sync_get_video((void **)&color_buffer, &timestamp, 0, FREENECT_VIDEO_RGB);
         if (freenect_sync_get_depth((void **)&depth_buffer, &timestamp, 0, FREENECT_DEPTH_MM) == 0)
         {
             process_kinect_logic(depth_buffer);
