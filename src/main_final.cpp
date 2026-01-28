@@ -22,13 +22,14 @@ const float COURSE_MAX = 55.0;
 const int VMAX = 4095;
 const int VOFF = 0;
 const int VMOY = 2500;
+const int OFFSET = 8;
 
 const float DIST_SOL = 900.0f;
 const float DIST_OBJ_MAX = 500.0f;
 
 struct MotorState
 {
-    float current_pos = 0;
+    float current_pos = OFFSET;
     float target_pos = 0;
     float avg_depth_mm = 0; // Stocke la distance moyenne vue par la Kinect pour cette zone
 };
@@ -159,17 +160,30 @@ static void drive_motors()
     }
 }
 
-static void reset_pins_to_zero()
+static void reset_pins_to_8mm()
 {
-    printf("\n[RESET] Descente des pins...\n");
+    printf("\n[RESET] Positionnement des pins à 8mm...\n");
+
+    // 1. Définir la cible à 8mm pour tous les moteurs
     for (int i = 0; i < TOTAL_MOTORS; i++)
     {
-        pca.set_pwm(i * 2, 0);
-        pca.set_pwm(i * 2 + 1, 2500);
+        moteurs[i].target_pos = 8.0f;
     }
-    sleep(5);
+
+    // 2. Faire tourner la boucle de mouvement pendant un court instant
+    // On simule environ 3 secondes de mouvement pour être sûr d'atteindre la position
+    for (int i = 0; i < 150; i++)
+    {
+        drive_motors();
+        usleep(20000); // 20ms comme dans le main
+    }
+
+    // 3. Tout couper
+    printf("[RESET] Extinction des moteurs.\n");
     for (int i = 0; i < 16; i++)
+    {
         pca.set_pwm(i, 0);
+    }
 }
 
 static int main_final()
@@ -198,6 +212,6 @@ static int main_final()
         usleep(20000);
     }
     freenect_sync_stop();
-    reset_pins_to_zero();
+    reset_pins_to_8mm();
     return 0;
 }
