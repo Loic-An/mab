@@ -29,29 +29,6 @@ const float DIST_OBJ_MAX = 500.0f;
 
 static float reference_depth[TOTAL_MOTORS];
 
-static void calibrate_ground()
-{
-    printf("[CALIBRATION] Mesure du sol en cours... Ne rien mettre sous la Kinect.\n");
-    uint16_t *depth_buffer = NULL;
-    uint32_t timestamp;
-
-    // On ignore les premières trames pour laisser le capteur se stabiliser
-    for (int i = 0; i < 30; i++)
-    {
-        freenect_sync_get_depth((void **)&depth_buffer, &timestamp, 0, FREENECT_DEPTH_MM);
-        usleep(30000);
-    }
-
-    // On calcule la moyenne du sol pour chaque moteur
-    process_kinect_logic(depth_buffer);
-    for (int i = 0; i < TOTAL_MOTORS; i++)
-    {
-        reference_depth[i] = moteurs[i].avg_depth_mm;
-        printf("  M%d : Sol détecté à %.0f mm\n", i, reference_depth[i]);
-    }
-    printf("[CALIBRATION] Terminée.\n");
-}
-
 struct MotorState
 {
     float current_pos = OFFSET;
@@ -211,6 +188,28 @@ static void reset_pins_to_8mm()
     {
         pca.set_pwm(i, 0);
     }
+}
+static void calibrate_ground()
+{
+    printf("[CALIBRATION] Mesure du sol en cours... Ne rien mettre sous la Kinect.\n");
+    uint16_t *depth_buffer = NULL;
+    uint32_t timestamp;
+
+    // On ignore les premières trames pour laisser le capteur se stabiliser
+    for (int i = 0; i < 30; i++)
+    {
+        freenect_sync_get_depth((void **)&depth_buffer, &timestamp, 0, FREENECT_DEPTH_MM);
+        usleep(30000);
+    }
+
+    // On calcule la moyenne du sol pour chaque moteur
+    process_kinect_logic(depth_buffer);
+    for (int i = 0; i < TOTAL_MOTORS; i++)
+    {
+        reference_depth[i] = moteurs[i].avg_depth_mm;
+        printf("  M%d : Sol détecté à %.0f mm\n", i, reference_depth[i]);
+    }
+    printf("[CALIBRATION] Terminée.\n");
 }
 
 static int main_final()
