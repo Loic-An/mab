@@ -6,7 +6,7 @@
 #include <cmath>
 #include "pca9685.hpp"
 
-#define COLS 2
+#define COLS 1
 #define ROWS 2
 #define TOTAL_MOTORS (COLS * ROWS)
 
