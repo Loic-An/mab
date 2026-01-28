@@ -19,6 +19,8 @@ volatile sig_atomic_t should_exit = 0;
 void signal_handler(int signal)
 {
     (void)signal; // Unused parameter
+    if (should_exit)
+        std::exit(0);
     should_exit = 1;
     printf("\n\nArrêt du programme...\n");
 }
