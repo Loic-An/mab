@@ -8,7 +8,7 @@
 #define VOFF 0
 
 // Fonction pour lire les touches sans attendre "Entrée"
-int getch()
+static int getch()
 {
     struct termios oldt, newt;
     int ch;
