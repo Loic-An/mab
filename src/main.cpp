@@ -10,6 +10,7 @@
 #include "main_matrix.cpp"
 #include "main_final.cpp"
 #include "test_pca9685.cpp"
+#include "main_calibrage.cpp"
 #include <signal.h>
 
 // Global flag to signal shutdown
@@ -184,6 +185,10 @@ int test(int argc, char **argv)
     else if (argv[1] == std::string("testmotors"))
     {
         return main_testmotors();
+    }
+    else if (argv[1] == std::string("calibrage"))
+    {
+        return main_calibrage();
     }
     else if (argv[1] == std::string("pca9685"))
     {
