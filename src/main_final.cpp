@@ -63,9 +63,9 @@ static void show_matrix_viewport(uint16_t *depth_buffer, unsigned char *color_bu
     int stepX = K_WIDTH / 40;
     int stepY = K_HEIGHT / 20;
 
-    for (int y = 0; y < K_HEIGHT; y += stepY)
+    for (int y = 2 * stepY; y < K_HEIGHT; y += stepY)
     {
-        for (int x = 0; x < K_WIDTH; x += stepX)
+        for (int x = 2 * stepX; x < K_WIDTH - 4 * stepX; x += stepX)
         {
             uint16_t d = depth_buffer[y * K_WIDTH + x];
             // if (color_buffer)
