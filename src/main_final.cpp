@@ -18,7 +18,7 @@ const int ZONE_W = K_WIDTH / COLS;
 const int ZONE_H = K_HEIGHT / ROWS;
 
 const float VITESSE_MM_S = 14.0;
-const float COURSE_MAX = 55.0;
+const float COURSE_MAX = 70.0;
 const int VMAX = 4095;
 const int VOFF = 0;
 const int VMOY = 2500;
@@ -26,6 +26,31 @@ const int OFFSET = 0;
 
 const float DIST_SOL = 900.0f;
 const float DIST_OBJ_MAX = 500.0f;
+
+static float reference_depth[TOTAL_MOTORS];
+
+static void calibrate_ground()
+{
+    printf("[CALIBRATION] Mesure du sol en cours... Ne rien mettre sous la Kinect.\n");
+    uint16_t *depth_buffer = NULL;
+    uint32_t timestamp;
+
+    // On ignore les premières trames pour laisser le capteur se stabiliser
+    for (int i = 0; i < 30; i++)
+    {
+        freenect_sync_get_depth((void **)&depth_buffer, &timestamp, 0, FREENECT_DEPTH_MM);
+        usleep(30000);
+    }
+
+    // On calcule la moyenne du sol pour chaque moteur
+    process_kinect_logic(depth_buffer);
+    for (int i = 0; i < TOTAL_MOTORS; i++)
+    {
+        reference_depth[i] = moteurs[i].avg_depth_mm;
+        printf("  M%d : Sol détecté à %.0f mm\n", i, reference_depth[i]);
+    }
+    printf("[CALIBRATION] Terminée.\n");
+}
 
 struct MotorState
 {
@@ -114,7 +139,9 @@ static void process_kinect_logic(uint16_t *depth_buffer)
                 moteurs[motor_idx].avg_depth_mm = (float)sum_depth / samples;
 
                 // Calcul du ratio de sortie du pin
-                float ratio = (DIST_SOL - moteurs[motor_idx].avg_depth_mm) / (DIST_SOL - DIST_OBJ_MAX);
+                // On utilise reference_depth[motor_idx] au lieu de DIST_SOL
+                float diff_depth = reference_depth[motor_idx] - moteurs[motor_idx].avg_depth_mm;
+                float ratio = diff_depth / (reference_depth[motor_idx] - DIST_OBJ_MAX);
                 moteurs[motor_idx].target_pos = std::clamp(ratio * COURSE_MAX, 0.0f, COURSE_MAX);
             }
             else
@@ -195,6 +222,7 @@ static int main_final()
     pca = PCA9685(0x40);
     if (!pca.init())
         return 1;
+    calibrate_ground();
 
     printf("\e[2J");
 
