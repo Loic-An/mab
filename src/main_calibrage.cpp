@@ -21,7 +21,7 @@ int getch()
     return ch;
 }
 
-int main_calibrage()
+static int main_calibrage()
 {
     PCA9685 pca(0x40);
     if (!pca.init())
