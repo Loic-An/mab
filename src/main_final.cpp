@@ -22,7 +22,7 @@ const float COURSE_MAX = 55.0;
 const int VMAX = 4095;
 const int VOFF = 0;
 const int VMOY = 2500;
-const int OFFSET = 8;
+const int OFFSET = 0;
 
 const float DIST_SOL = 900.0f;
 const float DIST_OBJ_MAX = 500.0f;
@@ -164,10 +164,10 @@ static void reset_pins_to_8mm()
 {
     printf("\n[RESET] Positionnement des pins à 8mm...\n");
 
-    // 1. Définir la cible à 8mm pour tous les moteurs
+    // 1. Définir la cible à OFFSETmm pour tous les moteurs
     for (int i = 0; i < TOTAL_MOTORS; i++)
     {
-        moteurs[i].target_pos = 8.0f;
+        moteurs[i].target_pos = OFFSET;
     }
 
     // 2. Faire tourner la boucle de mouvement pendant un court instant
@@ -175,7 +175,7 @@ static void reset_pins_to_8mm()
     for (int i = 0; i < 150; i++)
     {
         drive_motors();
-        usleep(20000); // 20ms comme dans le main
+        usleep(40000); // 20ms comme dans le main
     }
 
     // 3. Tout couper
@@ -200,7 +200,6 @@ static int main_final()
 
     while (!should_exit)
     {
-        // freenect_sync_get_video((void **)&color_buffer, &timestamp, 0, FREENECT_VIDEO_RGB);
         if (freenect_sync_get_depth((void **)&depth_buffer, &timestamp, 0, FREENECT_DEPTH_MM) == 0)
         {
             process_kinect_logic(depth_buffer);
