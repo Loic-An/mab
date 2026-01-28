@@ -57,7 +57,7 @@ static void render_ui()
     }
 }
 
-static void show_matrix_viewport(uint16_t *depth_buffer)
+static void show_matrix_viewport(uint16_t *depth_buffer, unsigned char *color_buffer)
 {
     printf("\n--- VUE KINECT (Distances en cm) ---\n");
     int stepX = K_WIDTH / 40;
@@ -68,12 +68,24 @@ static void show_matrix_viewport(uint16_t *depth_buffer)
         for (int x = 0; x < K_WIDTH; x += stepX)
         {
             uint16_t d = depth_buffer[y * K_WIDTH + x];
-            if (d == 0)
-                printf("  . ");
-            else if (d > 2500)
-                printf(" -- ");
+            if (color_buffer)
+            {
+                int pix = (y * K_WIDTH + x) * 3;
+                unsigned char r = color_buffer[pix + 0];
+                unsigned char g = color_buffer[pix + 1];
+                unsigned char b = color_buffer[pix + 2];
+                // print a 4-char wide colored block using background RGB
+                printf("\033[48;2;%u;%u;%um    \033[0m", r, g, b);
+            }
             else
-                printf("%3d ", d / 10);
+            {
+                if (d == 0)
+                    printf("  . ");
+                else if (d > 2500)
+                    printf(" -- ");
+                else
+                    printf("%3d ", d / 10);
+            }
         }
         printf("\n");
     }
@@ -174,29 +186,29 @@ static void reset_pins_to_zero()
 static int main_final()
 {
     uint16_t *depth_buffer = NULL;
+    unsigned char *color_buffer = NULL;
     uint32_t timestamp;
 
     pca = PCA9685(0x40);
     if (!pca.init())
         return 1;
 
-    reset_pins_to_zero();
     printf("\e[2J");
 
     while (!should_exit)
     {
+        freenect_sync_get_video((void **)&color_buffer, &timestamp, 0, FREENECT_VIDEO_RGB);
         if (freenect_sync_get_depth((void **)&depth_buffer, &timestamp, 0, FREENECT_DEPTH_MM) == 0)
         {
             process_kinect_logic(depth_buffer);
             drive_motors();
 
             render_ui();
-            show_matrix_viewport(depth_buffer);
+            show_matrix_viewport(depth_buffer, color_buffer);
         }
         usleep(20000);
     }
-
-    reset_pins_to_zero();
     freenect_sync_stop();
+    reset_pins_to_zero();
     return 0;
 }
