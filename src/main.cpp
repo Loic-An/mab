@@ -1,226 +1,239 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <pthread.h>
-#include <string>
-#include <libfreenect_sync.h>
-#include "vl53l0x.hpp"
-#include "pca9685.hpp"
-#include "main_testmotors.cpp"
-#include "main_matrix.cpp"
-#include "main_final.cpp"
-#include "test_pca9685.cpp"
-#include "main_calibrage.cpp"
-#include <signal.h>
+#include "test.hpp"
 
-// Global flag to signal shutdown
-volatile sig_atomic_t should_exit = 0;
+#define COLS 2
+#define ROWS 2
+#define TOTAL_MOTORS (COLS * ROWS)
 
-// Signal handler function
-void signal_handler(int signal)
+const int K_WIDTH = 640;
+const int K_HEIGHT = 320;
+const int ZONE_W = K_WIDTH / COLS;
+const int ZONE_H = K_HEIGHT / ROWS;
+
+const float VITESSE_MM_S = 14.0;
+const float COURSE_MAX = 70.0;
+const int VMAX = 4095;
+const int VOFF = 0;
+const int VMOY = 2500;
+const int OFFSET = 0;
+
+const float DIST_SOL = 900.0f;
+const float DIST_OBJ_MAX = 500.0f;
+
+static float reference_depth[TOTAL_MOTORS];
+
+struct MotorState
 {
-    (void)signal; // Unused parameter
-    if (should_exit)
-        std::exit(0);
-    should_exit = 1;
-    printf("\n\nArrêt du programme...\n");
+    float current_pos = OFFSET;
+    float target_pos = 0;
+    float avg_depth_mm = 0; // Stocke la distance moyenne vue par la Kinect pour cette zone
+};
+
+static MotorState moteurs[TOTAL_MOTORS];
+static PCA9685 pca;
+
+static void render_ui()
+{
+    printf("\e[H");
+    printf("===== SHAPE DISPLAY SYSTEM =====\n");
+    printf("Config: %dx%d | Sol: %.0fmm | Seuil Max: %.0fmm\n", COLS, ROWS, DIST_SOL, DIST_OBJ_MAX);
+    printf("------------------------------------------------------------\n");
+
+    for (int i = 0; i < TOTAL_MOTORS; i++)
+    {
+        // Affichage : Index, Distance Kinect (mm), Position actuelle -> Cible (mm)
+        printf("M%d | Kinect: %4.0fmm | Pos: %4.1f -> %4.1fmm ",
+               i, moteurs[i].avg_depth_mm, moteurs[i].current_pos, moteurs[i].target_pos);
+
+        int bars = (int)(moteurs[i].current_pos / (COURSE_MAX / 15.0f));
+        printf("|");
+        for (int b = 0; b < 15; b++)
+            printf(b < bars ? "#" : " ");
+        printf("|\n");
+    }
 }
 
-int test_freenect_sync()
+static void show_matrix_viewport(uint16_t *depth_buffer)
 {
+    printf("\n--- VUE KINECT (Distances en cm) ---\n");
+    int stepX = K_WIDTH / 40;
+    int stepY = K_HEIGHT / 20;
 
-    uint16_t *depth_buffer = NULL;
-    uint32_t timestamp;
-
-    // Coordonnées du pixel central (ecran de 640x480)
-    int x = 320;
-    int y = 240;
-    int index = y * 640 + x;
-
-    printf("Lecture de la Kinect (Mode Synchrone)...\n");
-
-    while (1)
+    for (int y = 2 * stepY; y < K_HEIGHT; y += stepY)
     {
-        // Récupération synchrone de la frame de profondeur
-        // Cette fonction attend qu'une nouvelle frame soit disponible
-        int ret = freenect_sync_get_depth((void **)&depth_buffer, &timestamp, 0, FREENECT_DEPTH_11BIT);
-        if (ret != 0)
+        for (int x = 2 * stepX; x < K_WIDTH - 4 * stepX; x += stepX)
         {
-            printf("Erreur : Impossible de récupérer les données (Kinect déconnectée ?)\n");
-            break;
+            uint16_t d = depth_buffer[y * K_WIDTH + x];
+            if (d == 0)
+                printf("  . ");
+            else if (d > 2500)
+                printf(" -- ");
+            else
+                printf("%3d ", d / 10);
         }
+        printf("\n");
+    }
+}
 
-        // Accès à la valeur brute du pixel central
-        uint16_t raw_depth = depth_buffer[index];
-
-        if (raw_depth >= 2047)
+static void process_kinect_logic(uint16_t *depth_buffer)
+{
+    for (int r = 0; r < ROWS; r++)
+    {
+        for (int c = 0; c < COLS; c++)
         {
-            printf("Pixel [%d, %d] : Hors de portée / Trop proche\n", x, y);
+            int motor_idx = r * COLS + c;
+            long sum_depth = 0;
+            int samples = 0;
+            int centerX = c * ZONE_W + (ZONE_W / 2);
+            int centerY = r * ZONE_H + (ZONE_H / 2);
+
+            // Zone d'échantillonnage de 40x40 pixels
+            for (int y = centerY - 20; y < centerY + 20; y++)
+            {
+                for (int x = centerX - 20; x < centerX + 20; x++)
+                {
+                    if (x < 0 || x >= K_WIDTH || y < 0 || y >= K_HEIGHT)
+                        continue;
+                    uint16_t d = depth_buffer[y * K_WIDTH + x];
+                    if (d < 2400)
+                    { // Filtre les données aberrantes
+                        sum_depth += d;
+                        samples++;
+                    }
+                }
+            }
+
+            if (samples > 0)
+            {
+                moteurs[motor_idx].avg_depth_mm = (float)sum_depth / samples;
+
+                // Calcul du ratio de sortie du pin
+                // On utilise reference_depth[motor_idx] au lieu de DIST_SOL
+                float diff_depth = reference_depth[motor_idx] - moteurs[motor_idx].avg_depth_mm;
+                float ratio = diff_depth / (reference_depth[motor_idx] - DIST_OBJ_MAX);
+                moteurs[motor_idx].target_pos = std::clamp(ratio * COURSE_MAX, 0.0f, COURSE_MAX);
+            }
+            else
+            {
+                // Si aucun pixel valide n'est trouvé, on stabilise à 0 (sol supposé)
+                moteurs[motor_idx].avg_depth_mm = DIST_SOL;
+                moteurs[motor_idx].target_pos = 0;
+            }
+        }
+    }
+}
+
+static void drive_motors()
+{
+    const float step = VITESSE_MM_S / 50.0f;
+    for (int i = 0; i < TOTAL_MOTORS; i++)
+    {
+        float diff = moteurs[i].target_pos - moteurs[i].current_pos;
+        int chA = i * 2;
+        int chB = i * 2 + 1;
+
+        if (std::abs(diff) > 1.2f)
+        {
+            int pwr = (std::abs(diff) > 10) ? VMAX : VMOY;
+            if (diff > 0)
+            {
+                pca.set_pwm(chA, pwr);
+                pca.set_pwm(chB, VOFF);
+                moteurs[i].current_pos += step;
+            }
+            else
+            {
+                pca.set_pwm(chA, VOFF);
+                pca.set_pwm(chB, pwr);
+                moteurs[i].current_pos -= step;
+            }
         }
         else
         {
-            printf("Pixel [%d, %d] : Distance brute = %d\n", x, y, raw_depth);
+            pca.set_pwm(chA, 0);
+            pca.set_pwm(chB, 0);
         }
-
-        // Optionnel : un petit délai pour ne pas saturer le processeur
-        usleep(100000);
     }
-
-    return 0;
 }
 
-// Callback appelé à chaque nouvelle image de profondeur
-void depth_cb(freenect_device *dev, void *v_depth, uint32_t timestamp)
+static void reset_pins_to_8mm()
 {
-    (void)dev;
-    // Exemple : lire la distance du pixel central (320x240)
-    printf("[%d]Profondeur au centre : %d mm\n", timestamp, ((uint16_t *)v_depth)[320 + 240 * 640]);
+    printf("\n[RESET] Positionnement des pins à 8mm...\n");
+
+    // 1. Définir la cible à OFFSETmm pour tous les moteurs
+    for (int i = 0; i < TOTAL_MOTORS; i++)
+    {
+        moteurs[i].target_pos = OFFSET;
+    }
+
+    // 2. Faire tourner la boucle de mouvement pendant un court instant
+    // On simule environ 3 secondes de mouvement pour être sûr d'atteindre la position
+    for (int i = 0; i < 150; i++)
+    {
+        drive_motors();
+        usleep(40000); // 20ms comme dans le main
+    }
+
+    // 3. Tout couper
+    printf("[RESET] Extinction des moteurs.\n");
+    for (int i = 0; i < 16; i++)
+    {
+        pca.set_pwm(i, 0);
+    }
 }
-
-int test_freenect_async(freenect_context *ctx, freenect_device *dev)
+static void calibrate_ground()
 {
+    printf("[CALIBRATION] Mesure du sol en cours... Ne rien mettre sous la Kinect.\n");
+    uint16_t *depth_buffer = NULL;
+    uint32_t timestamp;
 
-    // 1. Initialisation
-    if (freenect_init(&ctx, NULL) < 0)
-        return 1;
-
-    // 2. Ouverture du premier périphérique trouvé
-    if (freenect_open_device(ctx, &dev, 0) < 0)
-        return 1;
-
-    // 3. Configuration de la profondeur
-    freenect_set_depth_callback(dev, depth_cb);
-    freenect_set_depth_mode(dev, freenect_find_depth_mode(FREENECT_RESOLUTION_MEDIUM, FREENECT_DEPTH_11BIT));
-
-    // 4. Démarrage du flux
-    freenect_start_depth(dev);
-
-    printf("Lecture des données... Appuyez sur Ctrl+C pour arrêter.\n");
-
-    // 5. Boucle principale pour traiter les événements USB
-    while (freenect_process_events(ctx) >= 0)
+    // On ignore les premières trames pour laisser le capteur se stabiliser
+    for (int i = 0; i < 30; i++)
     {
-        // Le programme tourne ici et appelle depth_cb automatiquement
+        freenect_sync_get_depth((void **)&depth_buffer, &timestamp, 0, FREENECT_DEPTH_MM);
+        usleep(30000);
     }
 
-    freenect_stop_depth(dev);
-    freenect_close_device(dev);
-    freenect_shutdown(ctx);
-
-    return 0;
-}
-
-int test_vl53l0x()
-{
-    VL53L0X dev;
-    if (!dev.init())
+    // On calcule la moyenne du sol pour chaque moteur
+    process_kinect_logic(depth_buffer);
+    for (int i = 0; i < TOTAL_MOTORS; i++)
     {
-        fprintf(stderr, "Erreur initialisation VL53L0X\n");
-        return EXIT_FAILURE;
+        reference_depth[i] = moteurs[i].avg_depth_mm;
+        printf("  M%d : Sol détecté à %.0f mm\n", i, reference_depth[i]);
     }
-    printf("VL53L0X initialisé avec succès\n");
-    printf("Mesure de distance...\n");
-    while (1)
-    {
-        uint16_t distancemoyenne = 0;
-        for (int i = 0; i < 30; i++)
-        {
-            uint16_t distance = dev.readRangeSingleMillimeters();
-            distancemoyenne += distance;
-            if (dev.timeoutOccurred())
-            {
-                printf("Timeout !\n");
-            }
-        }
-        printf("Distance : %u mm\n", distancemoyenne / 30);
-        usleep(1000);
-    }
-    return EXIT_SUCCESS;
-}
-
-int test_PCA9385()
-{
-    PCA9685 dev;
-    dev.init();
-    dev.set_time(0, 0, 4095);
-    usleep(2000000);
-    return true;
-}
-
-int test(int argc, char **argv)
-{
-    if (argc > 2)
-    {
-        fprintf(stderr, "Usage: %s <freenect_sync|freenect_async|vl53l0x|matrix|motors|all>\n", argv[0]);
-        return EXIT_FAILURE;
-    }
-    if (argv[1] == std::string("freenect_sync"))
-    {
-        // Exemple de test : initialisation synchrone de la Kinect
-        return test_freenect_sync();
-    }
-    else if (argv[1] == std::string("freenect_async"))
-    {
-        // Exemple de test : initialisation asynchrone de la Kinect
-        freenect_context *ctx = nullptr;
-        freenect_device *dev = nullptr;
-        return test_freenect_async(ctx, dev);
-    }
-    else if (argv[1] == std::string("vl53l0x"))
-    {
-        return test_vl53l0x();
-    }
-    else if (argv[1] == std::string("testpca"))
-    {
-        return main_pca9685();
-    }
-    else if (argv[1] == std::string("matrix"))
-    {
-        return main_matrix();
-    }
-    else if (argv[1] == std::string("final"))
-    {
-        return main_final();
-    }
-    else if (argv[1] == std::string("testmotors"))
-    {
-        return main_testmotors();
-    }
-    else if (argv[1] == std::string("calibrage"))
-    {
-        return main_calibrage();
-    }
-    else if (argv[1] == std::string("pca9685"))
-    {
-        return test_PCA9385();
-    }
-    else if (argv[1] == std::string("all"))
-    {
-        int status = 0;
-        printf("===== Test Freenect Sync =====\n");
-        status |= test_freenect_sync();
-        printf("status=%d\n", status);
-        printf("\n===== Test Freenect Async =====\n");
-        freenect_context *ctx = nullptr;
-        freenect_device *dev = nullptr;
-        status |= test_freenect_async(ctx, dev);
-        printf("status=%d\n", status);
-        printf("\n===== Test VL53L0X =====\n");
-        status |= test_vl53l0x();
-        printf("status=%d\n", status);
-        return status;
-    }
-    else
-    {
-        fprintf(stderr, "Usage: %s <freenect_sync|freenect_async|vl53l0x|matrix|motors|all>\n", argv[0]);
-        return EXIT_FAILURE;
-    }
+    printf("[CALIBRATION] Terminée.\n");
 }
 
 int main(int argc, char **argv)
 {
-    signal(SIGINT, signal_handler);
     if (argc > 1)
-        return test(argc, argv);
+    {
+        Test test_instance(argc, argv);
+        return test_instance.run();
+    }
+    // Par défaut, exécution complete
+    uint16_t *depth_buffer = NULL;
+    uint32_t timestamp;
+
+    pca = PCA9685(0x40);
+    if (!pca.init())
+        return 1;
+    calibrate_ground();
+
+    printf("\e[2J");
+
+    while (!Test::should_exit)
+    {
+        if (freenect_sync_get_depth((void **)&depth_buffer, &timestamp, 0, FREENECT_DEPTH_MM) == 0)
+        {
+            process_kinect_logic(depth_buffer);
+            drive_motors();
+
+            render_ui();
+            show_matrix_viewport(depth_buffer);
+        }
+        usleep(20000);
+    }
+    freenect_sync_stop();
+    reset_pins_to_8mm();
     return 0;
 }

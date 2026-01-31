@@ -29,6 +29,7 @@ public:
     // Reset the device
     bool reset();
 
+    static constexpr uint16_t MAX_PWM = 4095;
 private:
     // config bits
     static constexpr uint8_t SLEEP = 0b00010000;
@@ -43,6 +44,4 @@ private:
     static constexpr uint8_t LED0_OFF_L = 0x08;
     static constexpr uint8_t LED0_OFF_H = 0x09;
     static constexpr uint8_t PRE_SCALE = 0xFE;
-
-    static constexpr uint16_t MAX_PWM = 4095;
 };

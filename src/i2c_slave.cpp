@@ -17,8 +17,7 @@ I2C_slave::I2C_slave(uint8_t addr) : addr(addr)
 
 I2C_slave::~I2C_slave()
 {
-    dev_ctn--;
-    if (dev_ctn < 1)
+    if (--dev_ctn < 1)
     {
         if (!bus_close())
             exit(errno);
